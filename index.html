@@ -2,11 +2,11 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bé Học Chữ Cái, Số & Trí Não Toàn Diện</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Be Vietnam Pro for Vietnamese texts, Fredoka for child-friendly headings -->
+    <!-- Google Fonts: Be Vietnam Pro for Vietnamese texts, Fredoka for child-friendly headings (100% Vietnamese localized support) -->
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;700;900&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -17,6 +17,8 @@
         body {
             font-family: 'Be Vietnam Pro', sans-serif;
             background-color: #f7fee7; /* Gentle soft lime green background */
+            -webkit-tap-highlight-color: transparent; /* Remove touch blue highlight on mobile */
+            overflow-x: hidden;
         }
         .kids-font {
             font-family: 'Fredoka', sans-serif;
@@ -30,7 +32,15 @@
             box-shadow: 0 2px 0 #cbd5e1, 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         canvas {
-            touch-action: none;
+            touch-action: none; /* Prevent browser handling gestures */
+        }
+        /* Mobile Scrollbar Hide for horizontal tabs scrolling */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
         /* Animation transitions */
         .btn-bounce {
@@ -53,72 +63,98 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between text-slate-800">
 
-    <!-- Top Premium Navigation Header -->
-    <header class="bg-white shadow-sm border-b-4 border-lime-500 sticky top-0 z-40">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-2">
-            <div class="flex items-center space-x-3">
-                <div class="bg-gradient-to-tr from-yellow-400 to-lime-500 p-2.5 rounded-2xl shadow-md text-white animate-bounce">
-                    <i class="fa-solid fa-graduation-cap text-2xl"></i>
+    <!-- ================= STREAMING_CHUNK: Tạo Header có thể ẩn/hiển thị tùy chỉnh để tối đa hóa không gian di động ================= -->
+    <header id="global-header" class="bg-white shadow-sm border-b-4 border-lime-500 sticky top-0 z-40 transition-all duration-300">
+        <div class="max-w-4xl mx-auto px-4 py-2 flex justify-between items-center gap-2">
+            <div class="flex items-center space-x-2">
+                <div class="bg-gradient-to-tr from-yellow-400 to-lime-500 p-2 rounded-xl shadow-md text-white">
+                    <i class="fa-solid fa-graduation-cap text-lg md:text-2xl"></i>
                 </div>
                 <div>
-                    <h1 class="kids-font text-xl md:text-2xl text-lime-600 tracking-wide">Bé Học Thông Minh</h1>
-                    <p class="text-xs text-orange-500 font-extrabold">Học Song Ngữ • Phát Triển Não Bộ Toàn Diện</p>
+                    <h1 class="kids-font text-base md:text-xl text-lime-600 tracking-wide leading-tight">Bé Học Thông Minh</h1>
+                    <p class="text-[9px] md:text-xs text-orange-500 font-extrabold leading-none">Học Song Ngữ • Rèn Trí Não</p>
                 </div>
             </div>
 
-            <!-- Global Control Bar -->
-            <div class="flex items-center space-x-2">
+            <!-- Mobile-Friendly Global Control Bar -->
+            <div class="flex items-center space-x-1.5">
                 <!-- TTS Speed Control -->
-                <button id="btn-speed" onclick="toggleSpeechSpeed()" class="bg-orange-100 hover:bg-orange-200 text-orange-700 px-3 py-1.5 rounded-full text-xs font-black flex items-center gap-1 transition-all">
+                <button id="btn-speed" onclick="toggleSpeechSpeed()" class="bg-orange-100 hover:bg-orange-200 text-orange-700 px-3 py-1.5 rounded-full text-[10px] md:text-xs font-black flex items-center gap-1 transition-all">
                     <i id="speed-icon" class="fa-solid fa-gauge-simple-high"></i>
-                    Tốc độ: <span id="speed-label">Thường</span>
+                    <span class="hidden xs:inline">Tốc độ: </span><span id="speed-label">Thường</span>
                 </button>
                 
                 <!-- Quick Sound Test -->
-                <button onclick="testSpeechSystem()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 p-2.5 rounded-full text-xs font-bold" title="Thử loa phát âm">
+                <button onclick="testSpeechSystem()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 w-8 h-8 md:w-9 md:h-9 rounded-full text-xs font-bold flex items-center justify-center shadow-sm" title="Thử loa phát âm">
                     <i class="fa-solid fa-volume-high"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Navigation Tab Bar -->
-    <main class="flex-grow max-w-4xl w-full mx-auto px-4 py-6">
+    <main class="flex-grow max-w-4xl w-full mx-auto px-3 py-4 md:px-4 md:py-6">
         
-        <!-- Tab Navigation (Chữ cái vs Số vs Từ Vựng vs Trí Não vs Ca Nhạc) -->
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6">
-            <button id="tab-alphabet" onclick="switchCategory('alphabet')" 
-                class="py-3 px-1 rounded-2xl text-xs md:text-sm font-black shadow-md border-b-4 transition-all flex flex-col items-center justify-center gap-1 bg-gradient-to-r from-teal-400 to-emerald-500 text-white border-emerald-600">
-                <i class="fa-solid fa-font text-lg"></i> <span>CHỮ CÁI</span>
+        <!-- ================= STREAMING_CHUNK: Thiết lập dải Tab trượt ngang kèm 2 nút mũi tên trái phải bấm được mượt mà ================= -->
+        <div class="relative flex items-center mb-1">
+            <!-- Left scroll button -->
+            <button onclick="scrollTabs('left')" class="absolute left-0 z-30 bg-white/95 border-2 border-lime-500 text-lime-600 w-8 h-8 rounded-full shadow-md flex items-center justify-center active:scale-90 transition-all" title="Trượt sang trái">
+                <i class="fa-solid fa-chevron-left text-xs font-black"></i>
             </button>
-            <button id="tab-numbers" onclick="switchCategory('numbers')" 
-                class="py-3 px-1 rounded-2xl text-xs md:text-sm font-black shadow-md border-b-4 transition-all flex flex-col items-center justify-center gap-1 bg-white text-slate-700 border-gray-300 hover:bg-gray-50">
-                <i class="fa-solid fa-arrow-1-9 text-lg"></i> <span>CHỮ SỐ</span>
-            </button>
-            <button id="tab-vocabulary" onclick="switchCategory('vocabulary')" 
-                class="py-3 px-1 rounded-2xl text-xs md:text-sm font-black shadow-md border-b-4 transition-all flex flex-col items-center justify-center gap-1 bg-white text-slate-700 border-gray-300 hover:bg-gray-50">
-                <i class="fa-solid fa-book-open-reader text-lg"></i> <span>TỪ VỰNG</span>
-            </button>
-            <button id="tab-braingames" onclick="switchCategory('braingames')" 
-                class="py-3 px-1 rounded-2xl text-xs md:text-sm font-black shadow-md border-b-4 transition-all flex flex-col items-center justify-center gap-1 bg-white text-slate-700 border-gray-300 hover:bg-gray-50">
-                <i class="fa-solid fa-brain text-lg"></i> <span>TRÍ NÃO</span>
-            </button>
-            <button id="tab-musicroom" onclick="switchCategory('musicroom')" 
-                class="py-3 px-1 rounded-2xl text-xs md:text-sm font-black shadow-md border-b-4 transition-all flex flex-col items-center justify-center gap-1 bg-white text-slate-700 border-gray-300 hover:bg-gray-50 col-span-2 sm:col-span-1">
-                <i class="fa-solid fa-music text-lg"></i> <span>CA NHẠC</span>
+            
+            <div class="flex overflow-x-auto gap-2 pb-2 px-9 w-full no-scrollbar scroll-smooth snap-x snap-mandatory" id="tab-scroller">
+                <button id="tab-alphabet" onclick="switchCategory('alphabet')" 
+                    class="snap-start shrink-0 py-3 px-4 rounded-2xl text-xs font-black shadow-md border-b-4 transition-all flex items-center gap-1.5 bg-gradient-to-r from-teal-400 to-emerald-500 text-white border-emerald-600">
+                    <i class="fa-solid fa-font text-sm"></i> <span>CHỮ CÁI</span>
+                </button>
+                <button id="tab-numbers" onclick="switchCategory('numbers')" 
+                    class="snap-start shrink-0 py-3 px-4 rounded-2xl text-xs font-black shadow-md border-b-4 transition-all flex items-center gap-1.5 bg-white text-slate-700 border-gray-300 hover:bg-gray-50">
+                    <i class="fa-solid fa-arrow-1-9 text-sm"></i> <span>CHỮ SỐ</span>
+                </button>
+                <button id="tab-vocabulary" onclick="switchCategory('vocabulary')" 
+                    class="snap-start shrink-0 py-3 px-4 rounded-2xl text-xs font-black shadow-md border-b-4 transition-all flex items-center gap-1.5 bg-white text-slate-700 border-gray-300 hover:bg-gray-50">
+                    <i class="fa-solid fa-book-open-reader text-sm"></i> <span>TỪ VỰNG</span>
+                </button>
+                <button id="tab-flashcard" onclick="switchCategory('flashcard')" 
+                    class="snap-start shrink-0 py-3 px-4 rounded-2xl text-xs font-black shadow-md border-b-4 transition-all flex items-center gap-1.5 bg-white text-slate-700 border-gray-300 hover:bg-gray-50">
+                    <i class="fa-solid fa-clone text-sm"></i> <span>HỌC THẺ</span>
+                </button>
+                <button id="tab-braingames" onclick="switchCategory('braingames')" 
+                    class="snap-start shrink-0 py-3 px-4 rounded-2xl text-xs font-black shadow-md border-b-4 transition-all flex items-center gap-1.5 bg-white text-slate-700 border-gray-300 hover:bg-gray-50">
+                    <i class="fa-solid fa-brain text-sm"></i> <span>TRÍ NÃO</span>
+                </button>
+                <button id="tab-musicroom" onclick="switchCategory('musicroom')" 
+                    class="snap-start shrink-0 py-3 px-4 rounded-2xl text-xs font-black shadow-md border-b-4 transition-all flex items-center gap-1.5 bg-white text-slate-700 border-gray-300 hover:bg-gray-50">
+                    <i class="fa-solid fa-music text-sm"></i> <span>CA NHẠC</span>
+                </button>
+            </div>
+            
+            <!-- Right scroll button -->
+            <button onclick="scrollTabs('right')" class="absolute right-0 z-30 bg-white/95 border-2 border-lime-500 text-lime-600 w-8 h-8 rounded-full shadow-md flex items-center justify-center active:scale-90 transition-all" title="Trượt sang phải">
+                <i class="fa-solid fa-chevron-right text-xs font-black"></i>
             </button>
         </div>
 
-        <!-- Global Option Sub-bar (Aligned to match image_0c9165.png) -->
-        <div id="global-sub-bar" class="bg-amber-50 border-2 border-amber-200 rounded-full p-2 mb-6 shadow-sm">
-            <div class="flex items-center justify-between gap-3 px-2">
-                <div id="sub-lang-selector" class="flex rounded-full bg-amber-100/60 p-1">
-                    <button id="sub-vi" onclick="switchLanguageSet('VI')" class="px-4 py-1.5 rounded-full text-xs font-black transition-all bg-white text-emerald-600 shadow-sm">Tiếng Việt <span class="text-[10px] text-slate-400">VN</span></button>
-                    <button id="sub-en" onclick="switchLanguageSet('EN')" class="px-4 py-1.5 rounded-full text-xs font-black transition-all text-slate-600 hover:text-emerald-600">English <span class="text-[10px] text-slate-400">US</span></button>
+        <!-- Header Toggle Bar (Direct request to allow collapsing header block) -->
+        <div class="flex justify-center -mt-1 mb-4">
+            <button onclick="toggleHeader()" class="bg-lime-500 hover:bg-lime-600 text-white font-extrabold px-3 py-1 rounded-b-xl shadow-md text-[9px] flex items-center gap-1 transition-all active:scale-95 uppercase tracking-wider">
+                <i id="header-toggle-icon" class="fa-solid fa-chevron-up text-[9px]"></i> <span id="header-toggle-text">Thu gọn đầu trang</span>
+            </button>
+        </div>
+
+        <!-- Global Option Sub-bar (Aligned to match image_521210.png and dynamically hidden in Vocabulary) -->
+        <div id="global-sub-bar" class="bg-amber-50 border-2 border-amber-200 rounded-2xl sm:rounded-full p-2.5 mb-5 shadow-sm">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 px-1">
+                <div id="sub-lang-selector" class="flex w-full sm:w-auto rounded-full bg-amber-100/60 p-1">
+                    <button id="sub-vi" onclick="switchLanguageSet('VI')" class="flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-black transition-all bg-white text-emerald-600 shadow-sm text-center">Tiếng Việt <span class="text-[9px] text-slate-400">VN</span></button>
+                    <button id="sub-en" onclick="switchLanguageSet('EN')" class="flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-black transition-all text-slate-600 hover:text-emerald-600 text-center">English <span class="text-[9px] text-slate-400">US</span></button>
                 </div>
 
-                <div class="flex items-center">
-                    <button onclick="openWritingPad('')" class="bg-pink-500 hover:bg-pink-600 text-white font-black px-5 py-2.5 rounded-full text-xs flex items-center gap-1.5 shadow transition-all transform active:scale-95 uppercase tracking-wider">
+                <!-- Custom Autoplay control button & Writing pad launcher -->
+                <div class="flex w-full sm:w-auto items-center justify-center gap-2 flex-wrap">
+                    <button id="btn-autoplay" onclick="toggleAutoplay()" class="flex-1 sm:flex-initial bg-indigo-500 hover:bg-indigo-600 text-white font-black px-4 py-2.5 rounded-full text-xs flex items-center justify-center gap-1.5 shadow transition-all transform active:scale-95 uppercase tracking-wider min-h-[44px]">
+                        <i class="fa-solid fa-play"></i> Đọc Xuyên Suốt
+                    </button>
+                    <button onclick="openWritingPad('')" class="flex-1 sm:flex-initial bg-pink-500 hover:bg-pink-600 text-white font-black px-5 py-2.5 rounded-full text-xs flex items-center justify-center gap-1.5 shadow transition-all transform active:scale-95 uppercase tracking-wider min-h-[44px]">
                         <i class="fa-solid fa-pen-fancy"></i> Bật Tập Viết Chữ
                     </button>
                 </div>
@@ -127,62 +163,65 @@
 
         <!-- ================= SECTION 1: ALPHABET & NUMBERS GRID ================= -->
         <section id="section-grid" class="block">
-            <p class="text-xs text-slate-500 mb-4 font-bold text-center">
-                <i class="fa-solid fa-hand-pointer text-emerald-500 mr-1 animate-bounce"></i> Nhấn trực tiếp vào ô để nghe chữ phát ra • Nhấn nút loa nhỏ <span class="bg-orange-500 text-white p-1 rounded-full text-[8px]"><i class="fa-solid fa-volume-high"></i></span> để nghe phát âm ví dụ!
+            <p class="text-[10px] md:text-xs text-slate-500 mb-4 font-bold text-center px-2 leading-relaxed">
+                <i class="fa-solid fa-hand-pointer text-emerald-500 mr-1 animate-bounce"></i> Chạm ô để nghe chữ • Chạm loa nhỏ <span class="bg-orange-500 text-white p-1 rounded-full text-[8px] inline-flex items-center justify-center w-4 h-4"><i class="fa-solid fa-volume-high"></i></span> nghe từ ví dụ!
             </p>
-            <div id="grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div id="grid-container" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">
                 <!-- Injected dynamically -->
             </div>
         </section>
 
+        <!-- ================= STREAMING_CHUNK: Thiết kế giao diện cho Từ Vựng, Notebook tùy biến ================= -->
         <!-- ================= SECTION 2: VOCABULARY LIBRARY ================= -->
-        <section id="section-vocabulary" class="hidden space-y-6">
+        <section id="section-vocabulary" class="hidden space-y-5">
             <!-- Daily challenge of 3 random words -->
-            <div class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-3xl p-6 shadow-lg relative overflow-hidden">
+            <div class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-3xl p-5 shadow-lg relative overflow-hidden">
                 <div class="absolute -right-6 -bottom-6 opacity-10 text-9xl font-black">🌟</div>
-                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                <div class="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
-                        <span class="bg-yellow-400 text-indigo-900 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">🌟 3 Từ Mới Mỗi Ngày Cho Bé</span>
-                        <h3 class="kids-font text-2xl mt-1 tracking-wide">Thử Thách Từ Vựng Hôm Nay</h3>
+                        <span class="bg-yellow-400 text-indigo-900 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">🌟 3 Từ Mới Mỗi Ngày Cho Bé</span>
+                        <h3 class="kids-font text-xl md:text-2xl mt-1 tracking-wide">Thử Thách Từ Vựng Hôm Nay</h3>
                     </div>
-                    <button onclick="generateDailyChallenge(true)" class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold py-2 px-4 rounded-xl border border-white/20 flex items-center gap-1 transition-all">
+                    <button onclick="generateDailyChallenge(true)" class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold py-2 px-4 rounded-xl border border-white/20 flex items-center gap-1 transition-all self-stretch sm:self-auto justify-center">
                         <i class="fa-solid fa-arrows-rotate animate-spin-slow"></i> Đổi Từ Mới
                     </button>
                 </div>
-                <div id="daily-words-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <div id="daily-words-container" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5">
                     <!-- Loaded dynamically -->
                 </div>
             </div>
 
             <!-- Custom Word notebook -->
-            <div class="bg-white border-4 border-emerald-400 rounded-3xl p-6 shadow-md">
+            <div class="bg-white border-4 border-emerald-400 rounded-3xl p-4 md:p-6 shadow-md">
                 <div class="flex items-center space-x-3 mb-4">
-                    <div class="bg-emerald-100 p-2.5 rounded-xl text-emerald-600"><i class="fa-solid fa-pencil"></i></div>
+                    <div class="bg-emerald-100 p-2.5 rounded-xl text-emerald-600 shrink-0"><i class="fa-solid fa-pencil"></i></div>
                     <div>
-                        <h3 class="kids-font text-lg text-emerald-700 tracking-wide">Sổ Tay Lưu Từ Mới Của Bé</h3>
-                        <p class="text-xs text-slate-500 font-extrabold">Ba mẹ giúp bé điền thêm các từ mới lạ để lưu lại tập viết nhé!</p>
+                        <h3 class="kids-font text-base md:text-lg text-emerald-700 tracking-wide">Sổ Tay Lưu Từ Mới Của Bé</h3>
+                        <p class="text-[10px] md:text-xs text-slate-500 font-extrabold leading-tight">Ba mẹ điền thêm các từ mới lạ để lưu lại tập viết nhé!</p>
                     </div>
                 </div>
 
-                <form id="add-word-form" onsubmit="saveCustomWord(event)" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                <form id="add-word-form" onsubmit="saveCustomWord(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 mb-1 uppercase tracking-wider">Từ Tiếng Anh</label>
-                        <input type="text" id="input-word-en" required placeholder="Ví dụ: Sun" class="w-full text-sm font-bold bg-slate-55 border-2 border-slate-200 focus:border-emerald-400 rounded-xl px-3 py-2 outline-none">
+                        <input type="text" id="input-word-en" required placeholder="Ví dụ: Sun" class="w-full text-sm font-bold bg-slate-55 border-2 border-slate-200 focus:border-emerald-400 rounded-xl px-3 py-2.5 outline-none min-h-[44px]">
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 mb-1 uppercase tracking-wider">Nghĩa Tiếng Việt</label>
-                        <input type="text" id="input-word-vi" required placeholder="Ví dụ: Mặt Trời" class="w-full text-sm font-bold bg-slate-55 border-2 border-slate-200 focus:border-emerald-400 rounded-xl px-3 py-2 outline-none">
+                        <input type="text" id="input-word-vi" required placeholder="Ví dụ: Mặt Trời" class="w-full text-sm font-bold bg-slate-55 border-2 border-slate-200 focus:border-emerald-400 rounded-xl px-3 py-2.5 outline-none min-h-[44px]">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-500 mb-1 uppercase tracking-wider">Emoji Biểu Tượng</label>
-                        <input type="text" id="input-emoji" placeholder="Ví dụ: ☀️" class="w-full text-sm font-bold bg-slate-55 border-2 border-slate-200 focus:border-emerald-400 rounded-xl px-3 py-2 outline-none">
+                    <div class="flex gap-2">
+                        <div class="flex-1">
+                            <label class="block text-[10px] font-black text-slate-500 mb-1 uppercase tracking-wider">Emoji</label>
+                            <input type="text" id="input-emoji" placeholder="Ví dụ: ☀️" class="w-full text-sm font-bold bg-slate-55 border-2 border-slate-200 focus:border-emerald-400 rounded-xl px-3 py-2.5 outline-none min-h-[44px] text-center">
+                        </div>
+                        <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold px-4 rounded-xl shadow-md flex items-center justify-center gap-1 shrink-0 h-[44px] self-end">
+                            <i class="fa-solid fa-plus"></i> Thêm
+                        </button>
                     </div>
-                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-2.5 px-4 rounded-xl shadow-md flex items-center justify-center gap-1">
-                        <i class="fa-solid fa-plus"></i> Thêm Từ Mới
-                    </button>
                 </form>
 
-                <div id="custom-words-wrapper" class="mt-6 border-t border-slate-100 pt-4 hidden">
+                <div id="custom-words-wrapper" class="mt-5 border-t border-slate-100 pt-4 hidden">
                     <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Sổ tay từ đã lưu:</h4>
                     <div id="custom-words-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                         <!-- Loaded dynamically -->
@@ -191,166 +230,227 @@
             </div>
 
             <!-- Expanded vocabulary library catalog -->
-            <div class="bg-white border-4 border-indigo-200 rounded-3xl p-6 shadow-md space-y-4">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
+            <div class="bg-white border-4 border-indigo-200 rounded-3xl p-4 md:p-6 shadow-md space-y-4">
+                <div class="flex flex-col gap-3 border-b border-slate-100 pb-4">
                     <div>
-                        <h3 class="kids-font text-lg text-indigo-700">Khám Phá Thư Viện Từ Vựng Hàng Ngày</h3>
-                        <p class="text-xs text-slate-500 font-extrabold">Kho từ vựng đời sống, màu sắc, động vật, gia đình cực phong phú cho bé</p>
+                        <h3 class="kids-font text-base md:text-lg text-indigo-700">Khám Phá Thư Viện Từ Vựng Hàng Ngày</h3>
+                        <p class="text-[10px] md:text-xs text-slate-500 font-extrabold leading-tight">Kho từ vựng đời sống, màu sắc, động vật, gia đình cực phong phú</p>
                     </div>
                     
-                    <!-- Quick Search Bar -->
-                    <div class="relative w-full md:w-64">
-                        <input type="text" id="vocab-search" oninput="filterVocabulary()" placeholder="Tìm kiếm từ vựng (ví dụ: dog, cá)..." class="w-full text-xs font-bold bg-slate-100 rounded-xl pl-8 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                    <!-- Quick Search Bar (Touch target optimized) -->
+                    <div class="relative w-full">
+                        <input type="text" id="vocab-search" oninput="filterVocabulary()" placeholder="Tìm kiếm từ vựng (ví dụ: dog, cá)..." class="w-full text-xs font-bold bg-slate-100 rounded-xl pl-9 pr-3 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 min-h-[44px]">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-slate-400 text-xs"></i>
                     </div>
                 </div>
 
-                <!-- Filters -->
-                <div class="flex flex-wrap gap-1.5" id="vocab-category-filters">
+                <!-- Horizontal Scrollable Filters on Mobile to save space -->
+                <div class="flex overflow-x-auto gap-1.5 pb-2 no-scrollbar scroll-smooth snap-x" id="vocab-category-filters">
                     <!-- Generated via JS -->
                 </div>
 
-                <!-- Vocabulary Items Grid with Safe Padding to prevent overflow (Addresses image_0c917e.png) -->
-                <div id="vocab-items-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                <!-- Vocabulary Items Grid with Safe Padding (Addresses image_0c917e.png) -->
+                <div id="vocab-items-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <!-- Generated via JS -->
                 </div>
             </div>
         </section>
 
-        <!-- ================= SECTION 3: BRAIN DEVELOPMENT GAMES ================= -->
-        <section id="section-braingames" class="hidden space-y-6">
-            <div class="bg-amber-100 text-amber-900 border-2 border-amber-200 rounded-2xl p-4 flex items-center space-x-3 shadow-sm">
-                <span class="text-3xl">🧠</span>
+        <!-- ================= STREAMING_CHUNK: Thiết lập giao diện Flashcards Học Thẻ với Emoji siêu to phóng đại ================= -->
+        <!-- ================= SECTION 5: FLASHCARD STUDY ARENA ================= -->
+        <section id="section-flashcard" class="hidden space-y-5">
+            <div class="bg-indigo-100 text-indigo-900 border-2 border-indigo-200 rounded-2xl p-4 flex items-center space-x-3 shadow-sm">
+                <span class="text-2xl md:text-3xl shrink-0">🎴</span>
                 <div>
-                    <h4 class="kids-font text-sm font-black">Sân chơi rèn luyện toàn diện cả hai Bán Cầu Não!</h4>
-                    <p class="text-xs opacity-95">Bán cầu Trái xử lý ngôn ngữ & tư duy logic • Bán cầu Phải xử lý âm thanh, hình ảnh & không gian.</p>
+                    <h4 class="kids-font text-xs md:text-sm font-black leading-tight">Phương pháp Tráo Thẻ Học Flashcard Phản Xạ!</h4>
+                    <p class="text-[10px] md:text-xs opacity-95 leading-snug">Chụp màn hình từ vựng và hình ảnh bằng não bộ. Chọn chế độ tự động và chỉnh tốc độ lật thẻ để bé dễ bắt chước.</p>
+                </div>
+            </div>
+
+            <!-- Card Arena -->
+            <div class="bg-white border-4 border-indigo-400 rounded-3xl p-5 md:p-6 shadow-xl flex flex-col justify-between min-h-[420px] relative">
+                
+                <!-- Status badging -->
+                <div class="absolute top-4 left-4 flex items-center space-x-1.5 z-20">
+                    <span id="fc-auto-badge" class="hidden bg-emerald-500 text-white text-[9px] font-black px-2.5 py-1 rounded-full animate-pulse uppercase">Đang tự chạy</span>
+                    <span id="fc-paused-badge" class="bg-slate-400 text-white text-[9px] font-black px-2.5 py-1 rounded-full uppercase">Đã dừng</span>
+                </div>
+
+                <!-- Triple mode audio selectors -->
+                <div class="flex rounded-full bg-slate-100 p-1 mb-4 select-none shrink-0 self-end z-20">
+                    <button id="fc-mode-vi" onclick="changeFlashcardMode('VI')" class="px-3.5 py-1.5 rounded-full text-[10px] font-black transition-all text-slate-600 hover:text-indigo-600">Tiếng Việt</button>
+                    <button id="fc-mode-en" onclick="changeFlashcardMode('EN')" class="px-3.5 py-1.5 rounded-full text-[10px] font-black transition-all text-slate-600 hover:text-indigo-600">English</button>
+                    <button id="fc-mode-bi" onclick="changeFlashcardMode('BI')" class="px-3.5 py-1.5 rounded-full text-[10px] font-black transition-all bg-indigo-500 text-white shadow-sm">Song Ngữ</button>
+                </div>
+
+                <!-- Flashcard Active Frame wrapper - FOCUS ENTIRELY ON HUGE IMAGE (EMOJI) (Requested changes) -->
+                <div id="flashcard-body-container" onclick="speakActiveFlashcard()" class="flex flex-col items-center justify-center space-y-6 my-auto cursor-pointer transform transition-all active:scale-95 select-none w-full py-6">
+                    <!-- Loaded dynamically with gigantic emoji size -->
+                </div>
+
+                <!-- Controls, Slider and manual shift panel -->
+                <div class="w-full space-y-4 border-t border-slate-100 pt-4 mt-4 shrink-0">
+                    <!-- Sliding delay config -->
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                        <label class="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-hourglass-half text-indigo-500"></i> Thời gian chờ lật thẻ: <span id="fc-speed-label" class="text-indigo-600 font-black">4 giây</span>
+                        </label>
+                        <input type="range" id="fc-speed-slider" min="2" max="10" step="1" value="4" oninput="handleFlashcardSpeedChange(this.value)" class="w-full sm:w-40 accent-indigo-500 cursor-pointer h-2 bg-slate-200 rounded-lg appearance-none">
+                    </div>
+
+                    <!-- Layout action buttons -->
+                    <div class="flex items-center justify-between gap-3">
+                        <button onclick="prevFlashcard()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-all active:scale-90" title="Thẻ trước">
+                            <i class="fa-solid fa-chevron-left text-sm"></i>
+                        </button>
+                        
+                        <!-- Toggle auto tráo thẻ -->
+                        <button id="btn-fc-toggle" onclick="toggleFlashcardAuto()" class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white font-black py-3 px-4 rounded-2xl text-xs flex items-center justify-center gap-1.5 shadow transition-all transform active:scale-95 uppercase tracking-wider min-h-[44px]">
+                            <i class="fa-solid fa-play"></i> <span>Tự Động Lật Thẻ</span>
+                        </button>
+
+                        <button onclick="nextFlashcard()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-all active:scale-90" title="Thẻ sau">
+                            <i class="fa-solid fa-chevron-right text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STREAMING_CHUNK: Tạo giao diện khu vực Trò Chơi Trí Tuệ phong phú ================= -->
+        <!-- ================= SECTION 3: BRAIN DEVELOPMENT GAMES ================= -->
+        <section id="section-braingames" class="hidden space-y-5">
+            <div class="bg-amber-100 text-amber-900 border-2 border-amber-200 rounded-2xl p-4 flex items-center space-x-3 shadow-sm">
+                <span class="text-2xl md:text-3xl shrink-0">🧠</span>
+                <div>
+                    <h4 class="kids-font text-xs md:text-sm font-black leading-tight">Sân chơi rèn luyện toàn diện cả hai Bán Cầu Não!</h4>
+                    <p class="text-[10px] md:text-xs opacity-95 leading-snug">Bán cầu Trái xử lý ngôn ngữ & logic • Bán cầu Phải xử lý hình ảnh & không gian.</p>
                 </div>
             </div>
 
             <!-- Game Settings & Control bar -->
-            <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3">
-                <div class="flex items-center space-x-2">
-                    <span class="text-xs font-bold text-slate-600">Ngôn ngữ chơi game:</span>
-                    <select id="game-lang-select" onchange="changeGameLanguage()" class="bg-white border border-slate-200 rounded-xl px-2.5 py-1 text-xs font-black text-indigo-700 focus:outline-none shadow-sm">
+            <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3 flex flex-col xs:flex-row items-center justify-between gap-3 shadow-sm">
+                <div class="flex items-center space-x-2 w-full xs:w-auto justify-between xs:justify-start">
+                    <span class="text-[11px] font-bold text-slate-600">Ngôn ngữ chơi:</span>
+                    <select id="game-lang-select" onchange="changeGameLanguage()" class="bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-black text-indigo-700 focus:outline-none shadow-sm cursor-pointer min-h-[36px]">
                         <option value="VI">Tiếng Việt 🇻🇳</option>
                         <option value="EN">English 🇺🇸</option>
                         <option value="BI" selected>Song Ngữ 🇻🇳🇺🇸</option>
                     </select>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <button onclick="readActiveGameHelp()" class="bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow-sm">
-                        <i class="fa-solid fa-volume-high"></i> Hướng Dẫn Âm Thanh
-                    </button>
-                </div>
+                <button onclick="readActiveGameHelp()" class="bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 shadow-sm w-full xs:w-auto justify-center min-h-[36px]">
+                    <i class="fa-solid fa-volume-high"></i> Hướng Dẫn Âm Thanh
+                </button>
             </div>
 
-            <!-- Game Mode Selector -->
-            <div class="grid grid-cols-3 gap-2">
-                <button onclick="switchGameMode('memory')" id="btn-game-memory" class="py-3 rounded-2xl text-xs font-black shadow bg-indigo-600 text-white">
+            <!-- Game Mode Selector - Grid optimized for touch fingers -->
+            <div class="grid grid-cols-1 xs:grid-cols-3 gap-2">
+                <button onclick="switchGameMode('memory')" id="btn-game-memory" class="py-3 px-1 rounded-2xl text-[10px] md:text-xs font-black shadow bg-indigo-600 text-white min-h-[44px]">
                      🧠 PHẢI: TRÍ NHỚ KỲ DIỆU
                 </button>
-                <button onclick="switchGameMode('spelling')" id="btn-game-spelling" class="py-3 rounded-2xl text-xs font-black shadow bg-white text-slate-700 hover:bg-slate-50">
+                <button onclick="switchGameMode('spelling')" id="btn-game-spelling" class="py-3 px-1 rounded-2xl text-[10px] md:text-xs font-black shadow bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 min-h-[44px]">
                      ✍️ TRÁI: GHÉP TỪ THÔNG THÁI
                 </button>
-                <button onclick="switchGameMode('association')" id="btn-game-assoc" class="py-3 rounded-2xl text-xs font-black shadow bg-white text-slate-700 hover:bg-slate-50">
+                <button onclick="switchGameMode('association')" id="btn-game-assoc" class="py-3 px-1 rounded-2xl text-[10px] md:text-xs font-black shadow bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 min-h-[44px]">
                      🔊 KÉP: NGHE ÂM CHỌN HÌNH
                 </button>
             </div>
 
             <!-- Game Play Arena -->
-            <div class="bg-white border-4 border-emerald-400 rounded-3xl p-6 shadow-xl min-h-[300px] flex flex-col justify-between relative">
+            <div class="bg-white border-4 border-emerald-400 rounded-3xl p-4 md:p-6 shadow-xl min-h-[280px] flex flex-col justify-between relative">
                 
                 <!-- Game Header Info -->
                 <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
-                    <span class="text-sm font-black text-emerald-600"><i class="fa-solid fa-trophy mr-1 text-yellow-400"></i> Điểm của Bé: <span id="brain-score">0</span></span>
-                    <button onclick="startActiveGame()" class="bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-xl text-xs font-black transition-all hover:bg-indigo-200">
-                        <i class="fa-solid fa-arrows-rotate mr-1 animate-spin-slow"></i> Chơi Lượt Mới
+                    <span class="text-xs md:text-sm font-black text-emerald-600"><i class="fa-solid fa-trophy mr-1 text-yellow-400"></i> Điểm của Bé: <span id="brain-score">0</span></span>
+                    <button onclick="startActiveGame()" class="bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-xl text-xs font-black transition-all hover:bg-indigo-200 min-h-[36px]">
+                        <i class="fa-solid fa-arrows-rotate mr-1 animate-spin-slow"></i> Lượt Mới
                     </button>
                 </div>
 
                 <!-- 3.1. Memory Game Area -->
                 <div id="game-memory-area" class="block w-full">
-                    <p class="text-center text-xs text-slate-500 mb-4 font-bold">Bé hãy nhấp lật các tấm thẻ để tìm ra các cặp giống nhau nhé!</p>
-                    <div id="memory-grid" class="grid grid-cols-4 gap-3 max-w-sm mx-auto">
+                    <p class="text-center text-[10px] md:text-xs text-slate-500 mb-4 font-bold leading-tight">Lật các tấm thẻ để tìm ra các cặp hình ảnh và chữ đồng bộ!</p>
+                    <div id="memory-grid" class="grid grid-cols-4 gap-2.5 max-w-sm mx-auto">
                         <!-- Dynamic cards -->
                     </div>
                 </div>
 
                 <!-- 3.2. Spelling Game Area -->
-                <div id="game-spelling-area" class="hidden w-full flex flex-col items-center justify-center space-y-6 py-4">
-                    <p class="text-center text-xs text-slate-500 font-bold">Hãy nhấp hoặc bấm các chữ cái xáo trộn bên dưới theo đúng thứ tự của hình ảnh gợi ý nhé!</p>
+                <div id="game-spelling-area" class="hidden w-full flex flex-col items-center justify-center space-y-4 py-2">
+                    <p class="text-center text-[10px] md:text-xs text-slate-500 font-bold leading-tight">Bấm các chữ cái xáo trộn bên dưới theo đúng thứ tự gợi ý nhé!</p>
                     
                     <!-- Display Question details -->
-                    <div class="flex flex-col items-center justify-center space-y-2">
-                        <span id="spell-emoji" class="text-7xl filter drop-shadow">🍎</span>
-                        <p id="spell-hint-label" class="kids-font text-xl text-emerald-600 font-black">Quả Táo</p>
+                    <div class="flex flex-col items-center justify-center space-y-1">
+                        <span id="spell-emoji" class="text-6xl md:text-7xl filter drop-shadow">🍎</span>
+                        <p id="spell-hint-label" class="kids-font text-lg md:text-xl text-emerald-600 font-black">Quả Táo</p>
                     </div>
 
                     <!-- Input / Slots Display -->
-                    <div id="spell-slots" class="flex flex-wrap gap-2 justify-center py-2 min-h-[50px]">
+                    <div id="spell-slots" class="flex flex-wrap gap-1.5 justify-center py-1.5 min-h-[44px]">
                         <!-- Input slots -->
                     </div>
 
                     <!-- Letters options container -->
-                    <div id="spell-options" class="flex flex-wrap gap-2 justify-center py-2">
+                    <div id="spell-options" class="flex flex-wrap gap-2 justify-center py-1.5">
                         <!-- Scrambled letter buttons -->
                     </div>
 
-                    <div class="flex space-x-3">
-                        <button onclick="clearSpellingAnswer()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-black px-4 py-2 rounded-xl text-xs">
+                    <div class="flex space-x-3 pt-2">
+                        <button onclick="clearSpellingAnswer()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-black px-4 py-2.5 rounded-xl text-xs min-h-[40px]">
                             Xóa Viết Lại
                         </button>
-                        <button onclick="checkSpellingAnswer()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black px-6 py-2 rounded-xl text-xs">
-                            Xác Nhận Nộp Bài
+                        <button onclick="checkSpellingAnswer()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black px-6 py-2.5 rounded-xl text-xs min-h-[40px]">
+                            Nộp Bài
                         </button>
                     </div>
                 </div>
 
                 <!-- 3.3. Sound Association Game Area -->
-                <div id="game-association-area" class="hidden w-full flex flex-col items-center justify-center space-y-6 py-4">
-                    <p class="text-center text-xs text-slate-500 font-bold">Hãy nghe phát âm rành mạch, sau đó chọn đúng hình vẽ minh họa!</p>
+                <div id="game-association-area" class="hidden w-full flex flex-col items-center justify-center space-y-5 py-2">
+                    <p class="text-center text-[10px] md:text-xs text-slate-500 font-bold leading-tight">Nghe phát âm rành mạch, sau đó chọn đúng hình vẽ minh họa!</p>
                     
-                    <button onclick="playAssocAudio()" class="w-20 h-20 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 active:scale-95 animate-pulse">
-                        <i class="fa-solid fa-volume-high text-3xl"></i>
+                    <button onclick="playAssocAudio()" class="w-16 h-16 md:w-20 md:h-20 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 active:scale-95 animate-pulse min-h-[64px]">
+                        <i class="fa-solid fa-volume-high text-2xl md:text-3xl"></i>
                     </button>
 
-                    <!-- Choice Grid -->
-                    <div id="assoc-grid" class="grid grid-cols-2 gap-4 w-full max-w-md">
+                    <!-- Choice Grid - optimized targets -->
+                    <div id="assoc-grid" class="grid grid-cols-2 gap-3 w-full max-w-md pt-2">
                         <!-- Choice options -->
                     </div>
                 </div>
 
                 <!-- Game Reward Overlay Indicator -->
                 <div id="game-feedback-overlay" class="hidden text-center mt-4">
-                    <p id="game-feedback-message" class="text-lg font-black text-emerald-600 animate-bounce"></p>
+                    <p id="game-feedback-message" class="text-base md:text-lg font-black text-emerald-600 animate-bounce"></p>
                 </div>
             </div>
         </section>
 
+        <!-- ================= STREAMING_CHUNK: Thiết lập phòng hát Karaoke tải nhạc tùy ý cho bé ================= -->
         <!-- ================= SECTION 4: EDUCATIONAL MUSIC ROOM ================= -->
-        <section id="section-musicroom" class="hidden space-y-6">
+        <section id="section-musicroom" class="hidden space-y-5">
             <div class="bg-pink-100 text-pink-900 border-2 border-pink-200 rounded-2xl p-4 flex items-center space-x-3 shadow-sm">
-                <span class="text-3xl">🎵</span>
+                <span class="text-2xl md:text-3xl shrink-0">🎵</span>
                 <div>
-                    <h4 class="kids-font text-sm font-black">Phòng Hát Ca Nhạc & Luyện Giọng Thiếu Nhi!</h4>
-                    <p class="text-xs opacity-95">Tải lên những giai điệu yêu thích của bé. Chế độ Hát thường giúp bé nghe giai điệu đầy đủ, chế độ Karaoke tự động tắt bớt âm để bé luyện giọng hát.</p>
+                    <h4 class="kids-font text-xs md:text-sm font-black leading-tight">Phòng Hát Ca Nhạc & Luyện Giọng Thiếu Nhi!</h4>
+                    <p class="text-[10px] md:text-xs opacity-95 leading-snug">Tải tệp bài hát bé yêu thích. Chế độ Hát thường phát nhạc đầy đủ, Karaoke tự động giảm âm lượng nhỏ để bé tự tin hát.</p>
                 </div>
             </div>
 
             <!-- Music settings & Upload bar -->
-            <div class="bg-slate-800 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-white border border-slate-700">
-                <div class="flex items-center space-x-3">
+            <div class="bg-slate-800 rounded-2xl p-4 flex flex-col gap-3.5 text-white border border-slate-700">
+                <div class="flex flex-col xs:flex-row items-center justify-between gap-2.5 w-full">
                     <span class="text-xs font-bold text-slate-300">Chế độ âm nhạc:</span>
-                    <div class="flex rounded-lg bg-slate-700 p-1">
-                        <button id="music-mode-normal" onclick="setMusicMode('normal')" class="px-3 py-1 rounded-md text-xs font-black bg-pink-500 text-white transition-all shadow-sm">Hát Bình Thường</button>
-                        <button id="music-mode-karaoke" onclick="setMusicMode('karaoke')" class="px-3 py-1 rounded-md text-xs font-black text-slate-300 hover:text-white transition-all">Hát Karaoke (Mute)</button>
+                    <div class="flex rounded-lg bg-slate-700 p-1 w-full xs:w-auto">
+                        <button id="music-mode-normal" onclick="setMusicMode('normal')" class="flex-1 xs:flex-none px-3 py-1.5 rounded-md text-[10px] md:text-xs font-black bg-pink-500 text-white transition-all shadow-sm">Nghe Nhạc</button>
+                        <button id="music-mode-karaoke" onclick="setMusicMode('karaoke')" class="flex-1 xs:flex-none px-3 py-1.5 rounded-md text-[10px] md:text-xs font-black text-slate-300 hover:text-white transition-all">Karaoke (Mute)</button>
                     </div>
                 </div>
                 
-                <div>
+                <div class="w-full">
                     <!-- Custom upload button -->
-                    <label class="cursor-pointer bg-emerald-500 hover:bg-emerald-600 text-white font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all transform active:scale-95">
-                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <label class="cursor-pointer bg-emerald-500 hover:bg-emerald-600 text-white font-black px-4 py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition-all transform active:scale-95 min-h-[44px] w-full">
+                        <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
                         <span>Tải Nhạc Của Bé (.mp3, .wav)</span>
                         <input type="file" id="music-upload" accept="audio/*" onchange="handleCustomMusicUpload(event)" class="hidden">
                     </label>
@@ -358,48 +458,48 @@
             </div>
 
             <!-- Music Player Canvas Layout with Stop/Tắt controls directly on layout -->
-            <div class="bg-slate-900 rounded-3xl p-6 text-white shadow-2xl border-4 border-pink-400 space-y-6">
+            <div class="bg-slate-900 rounded-3xl p-5 text-white shadow-2xl border-4 border-pink-400 space-y-5">
                 
                 <!-- Retro Melody Player Widget -->
-                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center space-x-4">
-                        <div class="w-14 h-14 bg-gradient-to-tr from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-3xl shadow-lg" id="music-vinyl">
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col xs:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3.5 w-full xs:w-auto">
+                        <div class="w-12 h-12 bg-gradient-to-tr from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-2xl shadow-lg shrink-0" id="music-vinyl">
                             📻
                         </div>
-                        <div>
-                            <h3 id="current-song-title" class="kids-font text-base text-yellow-300">Hãy chọn hoặc tải lên bài hát!</h3>
-                            <p class="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest" id="play-status-indicator">Trình phát nhạc đã sẵn sàng</p>
+                        <div class="truncate">
+                            <h3 id="current-song-title" class="kids-font text-sm md:text-base text-yellow-300 truncate">Hãy chọn hoặc tải lên bài hát!</h3>
+                            <p class="text-[9px] text-slate-400 font-extrabold uppercase tracking-widest" id="play-status-indicator">Trình phát nhạc sẵn sàng</p>
                         </div>
                     </div>
 
-                    <!-- Enhanced Player Control Board - Direct Pause/Stop Controls (Improved requested functionality) -->
-                    <div class="flex items-center space-x-2">
-                        <button id="btn-player-play" onclick="resumeActiveMusic()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black p-2.5 rounded-xl text-xs flex items-center justify-center w-10 h-10 shadow transition-all active:scale-90" title="Phát nhạc">
+                    <!-- Enhanced Player Control Board - Direct Pause/Stop Controls -->
+                    <div class="flex items-center space-x-2 shrink-0">
+                        <button id="btn-player-play" onclick="resumeActiveMusic()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black w-11 h-11 rounded-xl text-sm flex items-center justify-center shadow transition-all active:scale-90" title="Phát nhạc">
                             <i class="fa-solid fa-play"></i>
                         </button>
-                        <button id="btn-player-pause" onclick="pauseActiveMusic()" class="bg-amber-500 hover:bg-amber-600 text-white font-black p-2.5 rounded-xl text-xs flex items-center justify-center w-10 h-10 shadow transition-all active:scale-90" title="Tạm dừng">
+                        <button id="btn-player-pause" onclick="pauseActiveMusic()" class="bg-amber-500 hover:bg-amber-600 text-white font-black w-11 h-11 rounded-xl text-sm flex items-center justify-center shadow transition-all active:scale-90" title="Tạm dừng">
                             <i class="fa-solid fa-pause"></i>
                         </button>
-                        <button id="btn-player-stop" onclick="stopActiveMusic()" class="bg-red-500 hover:bg-red-600 text-white font-black p-2.5 rounded-xl text-xs flex items-center justify-center w-10 h-10 shadow transition-all active:scale-90" title="Tắt nhạc hoàn toàn">
+                        <button id="btn-player-stop" onclick="stopActiveMusic()" class="bg-red-500 hover:bg-red-600 text-white font-black w-11 h-11 rounded-xl text-sm flex items-center justify-center shadow transition-all active:scale-90" title="Tắt nhạc">
                             <i class="fa-solid fa-stop"></i>
                         </button>
                     </div>
                 </div>
 
                 <!-- Karaoke Running Screen -->
-                <div class="bg-black/40 border-2 border-slate-700 rounded-2xl p-6 min-h-[140px] flex flex-col items-center justify-center text-center space-y-2 relative overflow-hidden">
+                <div class="bg-black/40 border-2 border-slate-700 rounded-2xl p-5 min-h-[120px] flex flex-col items-center justify-center text-center space-y-1.5 relative overflow-hidden">
                     <div class="absolute inset-0 bg-pink-500/5 animate-pulse pointer-events-none"></div>
-                    <p id="karaoke-text-line-1" class="text-slate-400 font-extrabold text-sm md:text-base tracking-wide transition-all duration-300"></p>
-                    <p id="karaoke-text-line-2" class="text-yellow-300 kids-font text-lg md:text-2xl tracking-wide font-black transition-all duration-300">Hãy tải nhạc lên để cùng hát karaoke!</p>
+                    <p id="karaoke-text-line-1" class="text-slate-400 font-extrabold text-xs md:text-sm tracking-wide transition-all duration-300"></p>
+                    <p id="karaoke-text-line-2" class="text-yellow-300 kids-font text-base md:text-xl tracking-wide font-black transition-all duration-300">Tải nhạc của bé lên để nghe hát!</p>
                 </div>
 
                 <!-- Song List Scroller -->
                 <div class="space-y-2">
-                    <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Danh Sách Bài Hát Tải Lên:</h4>
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Danh Sách Bài Hát Đã Tải Lên:</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1" id="music-list">
                         <!-- Loaded dynamically -->
-                        <div class="col-span-2 text-center py-6 text-slate-400 text-xs italic bg-slate-800/50 rounded-xl" id="no-songs-prompt">
-                            Chưa có bài hát nào được tải lên. Ba mẹ hãy nhấn nút "Tải Nhạc Của Bé" ở trên để đưa bài hát của bé vào đây nhé!
+                        <div class="col-span-2 text-center py-6 px-4 text-slate-400 text-xs italic bg-slate-800/50 rounded-xl leading-relaxed" id="no-songs-prompt">
+                            Chưa có bài hát nào được tải lên. Ba mẹ hãy nhấn nút "Tải Nhạc Của Bé" ở trên để đưa giai điệu yêu thích của bé vào đây nhé!
                         </div>
                     </div>
                 </div>
@@ -408,50 +508,51 @@
 
     </main>
 
+    <!-- ================= STREAMING_CHUNK: Tạo bảng vẽ tập viết Canvas mượt mà, hỗ trợ màu sọc cầu vồng ================= -->
     <!-- ================= INTERACTIVE WRITING PAD MODAL ================= -->
-    <div id="writing-pad-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
-        <div class="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl border-4 border-pink-400 flex flex-col justify-between">
+    <div id="writing-pad-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden transition-opacity duration-300 opacity-0">
+        <div class="bg-white w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl border-4 border-pink-400 flex flex-col justify-between max-h-[96vh]">
             <!-- Modal Header -->
-            <div class="bg-gradient-to-r from-pink-500 to-rose-500 px-6 py-4 flex justify-between items-center text-white">
+            <div class="bg-gradient-to-r from-pink-500 to-rose-500 px-5 py-3.5 flex justify-between items-center text-white shrink-0">
                 <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-signature text-xl"></i>
-                    <span class="kids-font text-lg tracking-wide">Bé Tập Viết Chữ, Số & Từ Vựng!</span>
+                    <i class="fa-solid fa-signature text-lg"></i>
+                    <span class="kids-font text-base tracking-wide">Bé Tập Viết Chữ, Số & Từ Vựng!</span>
                 </div>
-                <button onclick="closeWritingPad()" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center transition-all">
+                <button onclick="closeWritingPad()" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center transition-all min-h-[32px] min-w-[32px]">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
             <!-- Drawing Arena -->
-            <div class="p-4 flex flex-col items-center justify-center space-y-4">
+            <div class="p-4 flex flex-col items-center justify-center space-y-3.5 overflow-y-auto">
                 <!-- Tracer Letter Target Display -->
-                <div class="flex flex-col sm:flex-row items-center space-x-4 w-full justify-around bg-slate-50 p-2.5 rounded-2xl border border-slate-100 gap-2">
-                    <span class="text-xs font-black text-slate-500">Mẫu tập viết:</span>
-                    <input type="text" id="writing-target-input" oninput="handleWritingInputChange()" value="A" class="kids-font font-black text-xl text-center bg-white border-2 border-slate-200 rounded-xl px-3 py-1 w-48 outline-none text-pink-600 shadow-sm" maxlength="25">
-                    <span class="text-[10px] font-black text-slate-400">Gõ chữ hoặc từ bất kỳ để tự động giãn rộng ô tập vẽ mẫu!</span>
+                <div class="flex flex-col xs:flex-row items-center space-x-2 w-full justify-around bg-slate-50 p-2.5 rounded-2xl border border-slate-100 gap-2 shrink-0">
+                    <span class="text-xs font-black text-slate-500 shrink-0">Mẫu viết:</span>
+                    <input type="text" id="writing-target-input" oninput="handleWritingInputChange()" value="A" class="kids-font font-black text-lg text-center bg-white border-2 border-slate-200 rounded-xl px-2 py-1.5 w-full xs:w-40 outline-none text-pink-600 shadow-sm min-h-[40px]" maxlength="25">
+                    <span class="text-[9px] font-black text-slate-400 text-center leading-tight">Nhập từ dài ô vẽ sẽ tự động mở rộng theo!</span>
                 </div>
 
                 <!-- Dynamic Aspect Ratio Canvas Container -->
-                <div id="canvas-container" class="relative w-full max-w-full bg-slate-100 border-4 border-dashed border-slate-300 rounded-2xl overflow-hidden shadow-inner smooth-transition" style="min-height: 180px;">
+                <div id="canvas-container" class="relative w-full max-w-full bg-slate-100 border-4 border-dashed border-slate-300 rounded-2xl overflow-hidden shadow-inner smooth-transition select-none" style="min-height: 160px;">
                     <canvas id="writing-canvas" class="absolute inset-0 w-full h-full cursor-crosshair z-10"></canvas>
                 </div>
 
-                <!-- Crayon/Pen color palettes -->
-                <div class="flex flex-wrap items-center justify-between w-full gap-2">
-                    <div class="flex space-x-1.5">
-                        <button onclick="setWritingColor('#ef4444')" class="w-8 h-8 rounded-full bg-red-500 border-2 border-white ring-2 ring-transparent ring-offset-2 hover:scale-110 transition-all active:scale-95" id="color-red"></button>
-                        <button onclick="setWritingColor('#22c55e')" class="w-8 h-8 rounded-full bg-emerald-500 border-2 border-white ring-2 ring-transparent ring-offset-2 hover:scale-110 transition-all active:scale-95" id="color-green"></button>
-                        <button onclick="setWritingColor('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 border-2 border-white ring-2 ring-transparent ring-offset-2 hover:scale-110 transition-all active:scale-95" id="color-blue"></button>
-                        <button onclick="setWritingColor('#eab308')" class="w-8 h-8 rounded-full bg-yellow-500 border-2 border-white ring-2 ring-transparent ring-offset-2 hover:scale-110 transition-all active:scale-95" id="color-yellow"></button>
-                        <button onclick="setWritingColor('rainbow')" class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 via-emerald-500 to-yellow-500 border-2 border-white ring-2 ring-transparent ring-offset-2 hover:scale-110 transition-all active:scale-95" id="color-rainbow" title="Cọ vẽ cầu vồng"></button>
+                <!-- Crayon/Pen color palettes - Touch optimized sizing -->
+                <div class="flex flex-row items-center justify-between w-full gap-2 shrink-0 pt-1">
+                    <div class="flex space-x-2 items-center">
+                        <button onclick="setWritingColor('#ef4444')" class="w-9 h-9 rounded-full bg-red-500 border-2 border-white ring-2 ring-transparent ring-offset-2 hover:scale-110 transition-all active:scale-95 shadow-sm min-h-[36px] min-w-[36px]" id="color-red"></button>
+                        <button onclick="setWritingColor('#22c55e')" class="w-9 h-9 rounded-full bg-emerald-500 border-2 border-white ring-2 ring-transparent ring-offset-2 hover:scale-110 transition-all active:scale-95 shadow-sm min-h-[36px] min-w-[36px]" id="color-green"></button>
+                        <button onclick="setWritingColor('#3b82f6')" class="w-9 h-9 rounded-full bg-blue-500 border-2 border-white ring-2 ring-transparent ring-offset-2 hover:scale-110 transition-all active:scale-95 shadow-sm min-h-[36px] min-w-[36px]" id="color-blue"></button>
+                        <button onclick="setWritingColor('#eab308')" class="w-9 h-9 rounded-full bg-yellow-500 border-2 border-white ring-2 ring-transparent ring-offset-2 hover:scale-110 transition-all active:scale-95 shadow-sm min-h-[36px] min-w-[36px]" id="color-yellow"></button>
+                        <button onclick="setWritingColor('rainbow')" class="w-9 h-9 rounded-full bg-gradient-to-tr from-pink-500 via-emerald-500 to-yellow-500 border-2 border-white ring-2 ring-transparent ring-offset-2 hover:scale-110 transition-all active:scale-95 shadow-sm min-h-[36px] min-w-[36px]" id="color-rainbow" title="Cọ vẽ cầu vồng"></button>
                     </div>
 
-                    <div class="flex space-x-2">
-                        <button onclick="clearWritingCanvas()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold px-3 py-2 rounded-xl text-xs flex items-center gap-1 transition-all">
-                            <i class="fa-solid fa-eraser"></i> Xóa Vẽ Lại
+                    <div class="flex space-x-1.5">
+                        <button onclick="clearWritingCanvas()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold px-3 py-2.5 rounded-xl text-xs flex items-center gap-1 transition-all min-h-[36px]">
+                            <i class="fa-solid fa-eraser"></i> Xóa
                         </button>
-                        <button onclick="speakWritingTracer()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-extrabold px-3 py-2 rounded-xl text-xs flex items-center gap-1 transition-all">
-                            <i class="fa-solid fa-volume-high"></i> Nghe Chữ
+                        <button onclick="speakWritingTracer()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-extrabold px-3 py-2.5 rounded-xl text-xs flex items-center gap-1 transition-all min-h-[36px]">
+                            <i class="fa-solid fa-volume-high"></i> Nghe
                         </button>
                     </div>
                 </div>
@@ -460,15 +561,15 @@
     </div>
 
     <!-- Speech API Status Toast Indicator -->
-    <div id="speech-toast" class="fixed bottom-6 right-6 bg-slate-800 text-white text-xs px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2 pointer-events-none opacity-0 transform translate-y-2 transition-all duration-300 z-50">
+    <div id="speech-toast" class="fixed bottom-6 right-6 bg-slate-800 text-white text-[10px] md:text-xs px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2 pointer-events-none opacity-0 transform translate-y-2 transition-all duration-300 z-50">
         <i class="fa-solid fa-circle-check text-emerald-400"></i>
         <span id="speech-toast-text">Đã đồng bộ loa học tập!</span>
     </div>
 
     <!-- Playful Educational Footer -->
-    <footer class="bg-slate-900 text-slate-400 py-6 text-center text-xs border-t-4 border-lime-500">
-        <p class="font-bold text-slate-300 mb-1">Ứng Dụng Học Tập Tương Tác Trực Quan Song Ngữ</p>
-        <p>Bảng Chữ Cái, Chữ Số, Từ Vựng & Âm Nhạc Trí Tuệ • Thiết kế tối ưu toàn diện</p>
+    <footer class="bg-slate-900 text-slate-400 py-5 text-center text-[10px] md:text-xs border-t-4 border-lime-500">
+        <p class="font-bold text-slate-300 mb-1 px-3">Ứng Dụng Học Tập Tương Tác Trực Quan Song Ngữ</p>
+        <p class="px-4">Bảng Chữ Cái, Chữ Số, Từ Vựng & Âm Nhạc Trí Tuệ • Tối ưu di động mượt mà</p>
         <p class="mt-2 text-slate-500">© 2026 Bé Học Thông Minh. All rights reserved.</p>
     </footer>
 
@@ -488,7 +589,7 @@
             { id: 'vi_ee', letter: 'Ê', wordVi: 'Con Ếch', wordEn: 'Frog', emoji: '🐸', bg: 'bg-purple-50', border: 'border-purple-400 text-purple-500', spellVi: 'Ê' },
             { id: 'vi_g', letter: 'G', wordVi: 'Con Gà', wordEn: 'Chicken', emoji: '🐔', bg: 'bg-fuchsia-50', border: 'border-fuchsia-400 text-fuchsia-500', spellVi: 'Gờ' },
             { id: 'vi_h', letter: 'H', wordVi: 'Con Hổ', wordEn: 'Tiger', emoji: '🐯', bg: 'bg-pink-50', border: 'border-pink-400 text-pink-500', spellVi: 'Hờ' },
-            { id: 'vi_i', letter: 'I', wordVi: 'Viên Bi', wordEn: 'Marble', emoji: '🔮', bg: 'bg-rose-50', border: 'border-rose-400 text-rose-500', spellVi: 'I ngắn' },
+            { id: 'vi_i', letter: 'I', wordVi: 'Viên Bi', wordEn: 'Marble', emoji: '🔮', bg: 'bg-rose-50', border: 'border-rose-400 text-rose-500', spellVi: 'I' },
             { id: 'vi_k', letter: 'K', wordVi: 'Cái Kẹo', wordEn: 'Candy', emoji: '🍬', bg: 'bg-red-50', border: 'border-red-400 text-red-500', spellVi: 'Ca' },
             { id: 'vi_l', letter: 'L', wordVi: 'Quả Lê', wordEn: 'Pear', emoji: '🍐', bg: 'bg-orange-50', border: 'border-orange-400 text-orange-500', spellVi: 'Lờ' },
             { id: 'vi_m', letter: 'M', wordVi: 'Con Mèo', wordEn: 'Cat', emoji: '🐱', bg: 'bg-amber-50', border: 'border-amber-400 text-amber-500', spellVi: 'Mờ' },
@@ -505,7 +606,7 @@
             { id: 'vi_ur', letter: 'Ư', wordVi: 'Con Hươu', wordEn: 'Deer', emoji: '🦌', bg: 'bg-orange-50', border: 'border-orange-400 text-orange-500', spellVi: 'Ư' },
             { id: 'vi_v', letter: 'V', wordVi: 'Con Vịt', wordEn: 'Duck', emoji: '🦆', bg: 'bg-amber-50', border: 'border-amber-400 text-amber-500', spellVi: 'Vờ' },
             { id: 'vi_x', letter: 'X', wordVi: 'Xe hơi', wordEn: 'Car', emoji: '🚗', bg: 'bg-lime-50', border: 'border-lime-400 text-lime-600', spellVi: 'Xờ' },
-            { id: 'vi_y', letter: 'Y', wordVi: 'Cái Yếm', wordEn: 'Bib', emoji: '👶', bg: 'bg-emerald-50', border: 'border-emerald-400 text-emerald-600', spellVi: 'Y dài' }
+            { id: 'vi_y', letter: 'Y', wordVi: 'Cái Yếm', wordEn: 'Bib', emoji: '👶', bg: 'bg-emerald-50', border: 'border-emerald-400 text-emerald-600', spellVi: 'Y' }
         ];
 
         // Alphabet English Dataset
@@ -560,7 +661,7 @@
             { id: 'v_col_3', wordEn: 'Green', wordVi: 'Màu xanh lá', emoji: '🟢', category: 'colors' },
             { id: 'v_col_4', wordEn: 'Yellow', wordVi: 'Màu vàng', emoji: '🟡', category: 'colors' },
             { id: 'v_col_5', wordEn: 'Purple', wordVi: 'Màu tím', emoji: '🟣', category: 'colors' },
-            { id: 'v_col_6', wordEn: 'Pink', wordVi: 'Màu hồng', emoji: '🌸', category: 'colors' },
+            { id: 'v_col_6', wordEn: 'Pink', wordVi: 'Màu hồng', emoji: '🩷', category: 'colors' }, 
             { id: 'v_col_7', wordEn: 'Orange', wordVi: 'Màu cam', emoji: '🟠', category: 'colors' },
             { id: 'v_col_8', wordEn: 'Brown', wordVi: 'Màu nâu', emoji: '🟤', category: 'colors' },
             { id: 'v_col_9', wordEn: 'Black', wordVi: 'Màu đen', emoji: '⚫', category: 'colors' },
@@ -652,7 +753,7 @@
             { id: 'v_home_7', wordEn: 'Spoon', wordVi: 'Cái thìa', emoji: '🥄', category: 'home' },
             { id: 'v_home_8', wordEn: 'Lamp', wordVi: 'Đèn ngủ', emoji: '💡', category: 'home' },
 
-            // Nature & Shapes (Bổ sung thêm lĩnh vực mới theo yêu cầu)
+            // Nature & Shapes 
             { id: 'v_nat_1', wordEn: 'Sun', wordVi: 'Mặt trời', emoji: '☀️', category: 'nature' },
             { id: 'v_nat_2', wordEn: 'Cloud', wordVi: 'Đám mây', emoji: '☁️', category: 'nature' },
             { id: 'v_nat_3', wordEn: 'Rain', wordVi: 'Cơn mưa', emoji: '🌧️', category: 'nature' },
@@ -683,7 +784,7 @@
         const synth = window.speechSynthesis;
         let viVoice = null;
         let enVoice = null;
-        let speechSpeed = 1.0;
+        let speechSpeed = 0.8; // Set default speed slightly slower (0.8) for optimal child learning & imitation
         let activeAudio = null;
 
         function initVoices() {
@@ -696,7 +797,8 @@
             speechSynthesis.onvoiceschanged = initVoices;
         }
 
-        // --- GLOBAL SOUND CONTROLLER (Primary Google TTS, secondary browser fallback) ---
+        // --- STREAMING_CHUNK: Viết các hàm điều khiển phát âm thông minh đa luồng song ngữ ---
+        // --- GLOBAL SOUND CONTROLLER ---
         function speakText(text, lang = "vi", onEndCallback = null) {
             if (activeAudio) {
                 activeAudio.pause();
@@ -706,6 +808,8 @@
 
             const cleanText = text.trim();
             const langCode = (lang === "vi") ? "vi" : "en";
+            
+            // Custom Google TTS Voice generator
             const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${langCode}&client=tw-ob&q=${encodeURIComponent(cleanText)}`;
             
             activeAudio = new Audio(ttsUrl);
@@ -746,18 +850,18 @@
             const label = document.getElementById('speed-label');
             const icon = document.getElementById('speed-icon');
             
-            if (speechSpeed === 1.0) {
-                speechSpeed = 0.65;
+            if (speechSpeed === 0.8) {
+                speechSpeed = 0.55;
                 label.innerText = "Chậm";
-                btn.className = "bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1.5 rounded-full text-xs font-black flex items-center gap-1 transition-all";
-                icon.className = "fa-solid fa-snail";
+                btn.className = "bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1.5 rounded-full text-[10px] md:text-xs font-black flex items-center gap-1 transition-all shadow-sm";
+                icon.className = "fa-solid fa-snail animate-pulse";
             } else {
-                speechSpeed = 1.0;
+                speechSpeed = 0.8;
                 label.innerText = "Thường";
-                btn.className = "bg-orange-100 hover:bg-orange-200 text-orange-700 px-3 py-1.5 rounded-full text-xs font-black flex items-center gap-1 transition-all";
+                btn.className = "bg-orange-100 hover:bg-orange-200 text-orange-700 px-3 py-1.5 rounded-full text-[10px] md:text-xs font-black flex items-center gap-1 transition-all";
                 icon.className = "fa-solid fa-gauge-simple-high";
             }
-            showToast(`Tốc độ: ${speechSpeed === 1.0 ? "Bình thường" : "Chậm giúp bé dễ bắt chước"}`);
+            showToast(`Tốc độ: ${speechSpeed === 0.8 ? "Bình thường" : "Chậm giúp bé dễ học theo"}`);
         }
 
         function showToast(msg) {
@@ -772,9 +876,10 @@
         }
 
         function testSpeechSystem() {
-            speakText("Hệ thống phát âm đã sẵn sàng!", "vi");
+            speakText("Hệ thống âm thanh đã đồng bộ và sẵn sàng!", "vi");
         }
 
+        // --- STREAMING_CHUNK: Viết các hàm điều hướng Tab và trượt thanh cuộn ngang bằng nút bấm ---
         // --- NAVIGATION STATE & SYSTEM CONTROL ---
         let currentCategory = 'alphabet'; // 'alphabet', 'numbers', 'vocabulary', 'braingames', 'musicroom'
         let currentLanguageSet = 'VI';   // 'VI' or 'EN'
@@ -782,18 +887,63 @@
         let customWords = [];
         let dailyChallengeWords = [];
 
+        // Autoplay/Continuous reading state variables
+        let isAutoplayActive = false;
+        let autoplayIndex = 0;
+
+        let flashcardsQueue = [];
+        let flashcardIndex = 0;
+        let isFlashcardAutoActive = false;
+        let flashcardMode = 'BI'; // 'VI', 'EN', 'BI'
+        let flashcardDelay = 4; // seconds
+        let flashcardTimer = null;
+
+        // Custom function to slide tab bar directly from buttons (Requested fix for image_527f2b.png)
+        function scrollTabs(direction) {
+            const scroller = document.getElementById('tab-scroller');
+            if (!scroller) return;
+            if (direction === 'left') {
+                scroller.scrollBy({ left: -140, behavior: 'smooth' });
+            } else {
+                scroller.scrollBy({ left: 140, behavior: 'smooth' });
+            }
+        }
+
+        // Custom toggle function to hide header and expand mobile space (Requested changes for image_52864d.png)
+        function toggleHeader() {
+            const header = document.getElementById('global-header');
+            const toggleIcon = document.getElementById('header-toggle-icon');
+            const toggleText = document.getElementById('header-toggle-text');
+            if (!header) return;
+
+            if (header.classList.contains('hidden')) {
+                header.classList.remove('hidden');
+                toggleIcon.className = "fa-solid fa-chevron-up text-[9px]";
+                toggleText.innerText = "Thu gọn đầu trang";
+                showToast("Đã hiện đầu trang");
+            } else {
+                header.classList.add('hidden');
+                toggleIcon.className = "fa-solid fa-chevron-down text-[9px]";
+                toggleText.innerText = "Mở rộng đầu trang";
+                showToast("Đã ẩn đầu trang - Màn hình rộng hơn");
+            }
+        }
+
         function switchCategory(category) {
+            stopAutoplay();
+            stopFlashcardAuto();
             currentCategory = category;
             stopActiveMusic();
             
             // Reset main tab button colors
-            const tabs = ['alphabet', 'numbers', 'vocabulary', 'braingames', 'musicroom'];
+            const tabs = ['alphabet', 'numbers', 'vocabulary', 'flashcard', 'braingames', 'musicroom'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
+                if (!btn) return;
                 if (t === category) {
-                    btn.className = "py-3 px-1 rounded-2xl text-xs md:text-sm font-black shadow-md border-b-4 transition-all flex flex-col items-center justify-center gap-1 bg-gradient-to-r from-teal-400 to-emerald-500 text-white border-emerald-600";
+                    btn.className = "snap-start shrink-0 py-3 px-4 rounded-2xl text-xs font-black shadow-md border-b-4 transition-all flex items-center gap-1.5 bg-gradient-to-r from-teal-400 to-emerald-500 text-white border-emerald-600";
                 } else {
-                    btn.className = "py-3 px-1 rounded-2xl text-xs md:text-sm font-black shadow-md border-b-4 transition-all flex flex-col items-center justify-center gap-1 bg-white text-slate-700 border-gray-300 hover:bg-gray-50 col-span-2 sm:col-span-1";
+                    btn.className = "snap-start shrink-0 py-3 px-4 rounded-2xl text-xs font-black shadow-md border-b-4 transition-all flex items-center gap-1.5 bg-white text-slate-700 border-gray-300 hover:bg-gray-50";
                 }
             });
 
@@ -802,12 +952,23 @@
             const alphabetSub = document.getElementById('sub-lang-selector');
             const gridSec = document.getElementById('section-grid');
             const vocabSec = document.getElementById('section-vocabulary');
+            const flashcardSec = document.getElementById('section-flashcard');
             const gamesSec = document.getElementById('section-braingames');
             const musicSec = document.getElementById('section-musicroom');
 
-            subBar.classList.remove('hidden');
+            // Hide/Show Autoplay button depending on page context
+            const btnAutoplay = document.getElementById('btn-autoplay');
+            if (category === 'alphabet' || category === 'numbers') {
+                btnAutoplay.classList.remove('hidden');
+                subBar.classList.remove('hidden'); // Show for Alphabet & Numbers
+            } else {
+                btnAutoplay.classList.add('hidden');
+                subBar.classList.add('hidden'); // HIDE global subbar (image_521210.png) for Vocab, Flashcards, Games, Music
+            }
+
             gridSec.classList.add('hidden');
             vocabSec.classList.add('hidden');
+            if (flashcardSec) flashcardSec.classList.add('hidden');
             gamesSec.classList.add('hidden');
             musicSec.classList.add('hidden');
 
@@ -827,35 +988,139 @@
                 renderVocabGrid();
                 loadCustomWords();
                 generateDailyChallenge(false);
+            } else if (category === 'flashcard') {
+                if (flashcardSec) flashcardSec.classList.remove('hidden');
+                startFlashcardSystem();
             } else if (category === 'braingames') {
-                subBar.classList.add('hidden');
                 gamesSec.classList.remove('hidden');
                 startActiveGame();
             } else if (category === 'musicroom') {
-                subBar.classList.add('hidden');
                 musicSec.classList.remove('hidden');
                 initMusicRoom();
             }
         }
 
         function switchLanguageSet(lang) {
+            stopAutoplay();
             currentLanguageSet = lang;
             const viBtn = document.getElementById('sub-vi');
             const enBtn = document.getElementById('sub-en');
             if (lang === 'VI') {
-                viBtn.className = "px-4 py-1.5 rounded-full text-xs font-black transition-all bg-white text-emerald-600 shadow-sm";
-                enBtn.className = "px-4 py-1.5 rounded-full text-xs font-black transition-all text-slate-600 hover:text-emerald-600";
+                viBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-black transition-all bg-white text-emerald-600 shadow-sm text-center";
+                enBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-black transition-all text-slate-600 hover:text-emerald-600 text-center";
             } else {
-                enBtn.className = "px-4 py-1.5 rounded-full text-xs font-black transition-all bg-white text-emerald-600 shadow-sm";
-                viBtn.className = "px-4 py-1.5 rounded-full text-xs font-black transition-all text-slate-600 hover:text-emerald-600";
+                enBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-black transition-all bg-white text-emerald-600 shadow-sm text-center";
+                viBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-black transition-all text-slate-600 hover:text-emerald-600 text-center";
             }
             renderGridView();
         }
 
+        // --- STREAMING_CHUNK: Viết các hàm cho cơ chế Đọc xuyên suốt bảng từ cái/con số ---
+        // --- AUTOPLAY CONTINUOUS READING ENGINE ---
+        function toggleAutoplay() {
+            if (isAutoplayActive) {
+                stopAutoplay();
+            } else {
+                startAutoplay();
+            }
+        }
+
+        function startAutoplay() {
+            isAutoplayActive = true;
+            autoplayIndex = 0;
+            const btn = document.getElementById('btn-autoplay');
+            btn.innerHTML = `<i class="fa-solid fa-stop text-xs"></i> Dừng Đọc`;
+            btn.className = "flex-1 sm:flex-initial bg-red-500 hover:bg-red-600 text-white font-black px-4 py-2.5 rounded-full text-xs flex items-center justify-center gap-1.5 shadow transition-all transform active:scale-95 uppercase tracking-wider min-h-[44px]";
+            playNextAutoplay();
+        }
+
+        function stopAutoplay() {
+            isAutoplayActive = false;
+            const btn = document.getElementById('btn-autoplay');
+            if (btn) {
+                btn.innerHTML = `<i class="fa-solid fa-play text-xs"></i> Đọc Xuyên Suốt`;
+                btn.className = "flex-1 sm:flex-initial bg-indigo-500 hover:bg-indigo-600 text-white font-black px-4 py-2.5 rounded-full text-xs flex items-center justify-center gap-1.5 shadow transition-all transform active:scale-95 uppercase tracking-wider min-h-[44px]";
+            }
+            // Remove highlighters
+            const cards = document.querySelectorAll('#grid-container > div');
+            cards.forEach(c => {
+                c.classList.remove('ring-4', 'ring-pink-500', 'scale-105', 'bg-pink-50');
+            });
+        }
+
+        function playNextAutoplay() {
+            if (!isAutoplayActive) return;
+            const data = getActiveDataset();
+            if (autoplayIndex >= data.length) {
+                stopAutoplay();
+                showToast("Đã đọc hết bảng rồi bé yêu!");
+                return;
+            }
+
+            // Highlight active card
+            highlightAutoplayCard(autoplayIndex);
+
+            const item = data[autoplayIndex];
+            
+            // Standard reading speed for normal letter pronunciation
+            let textToSpeak = (currentCategory === 'numbers') ? (currentLanguageSet === 'VI' ? item.wordVi : item.wordEn) : (item.spellVi || item.letter);
+            speakText(textToSpeak, currentLanguageSet === 'VI' ? 'vi' : 'en', () => {
+                goToNextAutoplay();
+            });
+        }
+
+        function goToNextAutoplay() {
+            if (!isAutoplayActive) return;
+            autoplayIndex++;
+            setTimeout(playNextAutoplay, 1800); // 1.8 seconds delay between letters for perfect imitation
+        }
+
+        function highlightAutoplayCard(index) {
+            const cards = document.querySelectorAll('#grid-container > div');
+            cards.forEach((c, idx) => {
+                if (idx === index) {
+                    c.classList.add('ring-4', 'ring-pink-500', 'scale-105', 'bg-pink-50');
+                    c.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    c.classList.remove('ring-4', 'ring-pink-500', 'scale-105', 'bg-pink-50');
+                }
+            });
+        }
+
+        // --- STREAMING_CHUNK: Sinh các lưới ô chữ cái, số, từ vựng chuẩn CSS Grid di động ---
         // --- 1. ALPHABET & NUMBERS GRID RENDER ---
         function getActiveDataset() {
             if (currentCategory === 'numbers') return NUMBERS;
             return (currentLanguageSet === 'VI') ? VI_ALPHABET : EN_ALPHABET;
+        }
+
+        // Helper to output styled color circles or default emojis
+        function getEmojiOrColorHtml(item, sizeClass = 'text-5xl') {
+            if (item.category === 'colors') {
+                let colorHex = '#ef4444';
+                if (item.wordEn === 'Red') colorHex = '#ef4444';
+                else if (item.wordEn === 'Blue') colorHex = '#3b82f6';
+                else if (item.wordEn === 'Green') colorHex = '#22c55e';
+                else if (item.wordEn === 'Yellow') colorHex = '#eab308';
+                else if (item.wordEn === 'Purple') colorHex = '#a855f7';
+                else if (item.wordEn === 'Pink') colorHex = '#ec4899'; // Gorgeous hot pink circle
+                else if (item.wordEn === 'Orange') colorHex = '#f97316';
+                else if (item.wordEn === 'Brown') colorHex = '#78350f';
+                else if (item.wordEn === 'Black') colorHex = '#000000';
+                else if (item.wordEn === 'White') colorHex = '#ffffff';
+                else if (item.wordEn === 'Grey') colorHex = '#6b7280';
+
+                let dim = 'w-16 h-16 md:w-20 md:h-20';
+                if (sizeClass === 'text-4xl') dim = 'w-10 h-10';
+                if (sizeClass === 'text-3xl') dim = 'w-8 h-8';
+
+                if (item.wordEn === 'Rainbow') {
+                    return `<div class="${dim} rounded-full bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 border border-slate-200 flex-shrink-0 shadow-sm select-none"></div>`;
+                } else {
+                    return `<div class="${dim} rounded-full border border-slate-200 flex-shrink-0 shadow-sm select-none" style="background-color: ${colorHex}"></div>`;
+                }
+            }
+            return `<span class="${sizeClass} select-none filter drop-shadow flex-shrink-0">${item.emoji}</span>`;
         }
 
         function renderGridView() {
@@ -865,21 +1130,21 @@
 
             data.forEach((item) => {
                 const card = document.createElement('div');
-                card.className = `relative flex flex-col justify-between items-center p-5 bg-white border-2 border-slate-200 border-r-4 border-b-4 rounded-2xl aspect-square cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95 shadow-sm select-none ${item.border || 'border-indigo-400 text-indigo-500'}`;
+                card.className = `relative flex flex-col justify-between items-center p-2.5 bg-white border-2 border-slate-200 border-r-4 border-b-4 rounded-2xl aspect-square cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95 shadow-sm select-none ${item.border || 'border-indigo-400 text-indigo-500'}`;
                 
-                // Clicking card center only reads clean pure letter/number
+                // Clicking card center reads with normal phonetic speed
                 card.onclick = () => {
+                    stopAutoplay();
                     if (currentCategory === 'numbers') {
                         speakText(currentLanguageSet === 'VI' ? item.wordVi : item.wordEn, currentLanguageSet === 'VI' ? 'vi' : 'en');
                     } else {
-                        let textToSpeak = item.spellVi || item.letter;
-                        speakText(textToSpeak, currentLanguageSet === 'VI' ? 'vi' : 'en');
+                        speakText(item.spellVi || item.letter, currentLanguageSet === 'VI' ? 'vi' : 'en');
                     }
                 };
 
                 // Click tracer practice loader
                 const practiceBtn = document.createElement('button');
-                practiceBtn.className = "absolute bottom-1 right-1 text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-500 font-extrabold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 z-20";
+                practiceBtn.className = "absolute bottom-1 right-1 text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-500 font-extrabold px-1.5 py-1 rounded-lg flex items-center justify-center gap-0.5 z-20 min-h-[24px]";
                 practiceBtn.innerHTML = `<i class="fa-solid fa-pen"></i> Viết`;
                 practiceBtn.onclick = (e) => {
                     e.stopPropagation();
@@ -888,18 +1153,18 @@
 
                 // Independent small round speaker for example word only
                 const soundBtn = document.createElement('button');
-                soundBtn.className = "absolute top-2 right-2 w-7 h-7 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center transition-transform active:scale-90 z-20 shadow-sm";
-                soundBtn.innerHTML = `<i class="fa-solid fa-volume-high text-[10px]"></i>`;
+                soundBtn.className = "absolute top-1 right-1 w-7 h-7 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center transition-transform active:scale-90 z-20 shadow-sm min-h-[28px] min-w-[28px]";
+                soundBtn.innerHTML = `<i class="fa-solid fa-volume-high text-[9px]"></i>`;
                 soundBtn.onclick = (e) => {
                     e.stopPropagation();
                     speakText(currentLanguageSet === 'VI' ? item.wordVi : item.wordEn, currentLanguageSet === 'VI' ? 'vi' : 'en');
                 };
 
                 card.innerHTML = `
-                    <span class="kids-font text-5xl md:text-6xl font-black drop-shadow-sm leading-none my-auto">${item.letter}</span>
+                    <span class="kids-font text-6xl xs:text-7xl font-black drop-shadow-sm leading-none my-auto">${item.letter}</span>
                     <div class="text-center w-full mt-1 flex flex-col items-center">
                         <span class="text-2xl drop-shadow">${item.emoji}</span>
-                        <p class="text-xs font-black text-slate-700 leading-none truncate mt-1 w-full text-center">
+                        <p class="text-[10px] font-black text-slate-700 leading-none truncate mt-1 w-full text-center">
                             ${currentLanguageSet === 'VI' ? item.wordVi : item.wordEn}
                         </p>
                     </div>
@@ -910,6 +1175,7 @@
             });
         }
 
+        // --- STREAMING_CHUNK: Sinh giao diện cho Từ Vựng phong phú ---
         // --- 2. VOCABULARY ENGINE ---
         function renderVocabFilters() {
             const container = document.getElementById('vocab-category-filters');
@@ -917,7 +1183,7 @@
             VOCAB_CATEGORIES.forEach(cat => {
                 const button = document.createElement('button');
                 const isActive = activeVocabCategory === cat.id;
-                button.className = `px-3.5 py-2 rounded-2xl text-xs font-black shadow-sm border-2 transition-all flex items-center gap-1.5 ${
+                button.className = `snap-start shrink-0 px-3.5 py-2 rounded-2xl text-xs font-black shadow-sm border-2 transition-all flex items-center gap-1.5 ${
                     isActive ? 'bg-emerald-600 text-white border-emerald-700' : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-300'
                 }`;
                 button.onclick = () => {
@@ -930,7 +1196,7 @@
             });
         }
 
-        // Beautifully padded vocabulary cards contained within limits (Addresses image_0c917e.png)
+        // Beautifully padded vocabulary cards contained within limits (Addresses image_0c917e.png layout leaks)
         function renderVocabGrid(searchData = null) {
             const grid = document.getElementById('vocab-items-grid');
             grid.innerHTML = '';
@@ -942,35 +1208,35 @@
 
             data.forEach(item => {
                 const block = document.createElement('div');
-                // Padded layout inside grid cards to prevent any overflow leak
-                block.className = "bg-white border-2 border-slate-200 rounded-2xl p-4 flex flex-row items-center justify-between gap-3 shadow-sm hover:shadow-md transition-all duration-200";
+                block.className = "bg-white border-2 border-slate-200 rounded-2xl p-4 flex flex-col xs:flex-row items-start xs:items-center justify-between gap-3 shadow-sm hover:shadow-md transition-all duration-200";
                 
                 block.innerHTML = `
-                    <div class="flex items-center space-x-3 overflow-hidden">
-                        <span class="text-5xl select-none filter drop-shadow flex-shrink-0">${item.emoji}</span>
+                    <div class="flex items-center space-x-3 overflow-hidden w-full xs:w-auto">
+                        ${getEmojiOrColorHtml(item, 'text-4xl sm:text-5xl')}
                         <div class="truncate">
-                            <p class="kids-font text-lg text-indigo-700 font-bold leading-tight truncate">${item.wordEn}</p>
-                            <p class="text-sm font-black text-emerald-600 leading-tight truncate">${item.wordVi}</p>
+                            <p class="kids-font text-base sm:text-lg text-indigo-700 font-bold leading-tight truncate">${item.wordEn}</p>
+                            <p class="text-xs sm:text-sm font-black text-emerald-600 leading-tight truncate mt-0.5">${item.wordVi}</p>
                         </div>
                     </div>
                     <!-- All controls perfectly locked INSIDE card padding box to prevent bleeding -->
-                    <div class="flex items-center space-x-1 flex-shrink-0 bg-slate-50 border border-slate-100 p-1.5 rounded-xl">
-                        <button onclick="speakText('${item.wordVi}', 'vi')" class="w-8 h-8 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-600 flex items-center justify-center font-black text-xs shadow-sm transition-all active:scale-90" title="Phát âm tiếng Việt">VI</button>
-                        <button onclick="speakText('${item.wordEn}', 'en')" class="w-8 h-8 rounded-full bg-rose-100 hover:bg-rose-200 text-rose-600 flex items-center justify-center font-black text-xs shadow-sm transition-all active:scale-90" title="Phát âm tiếng Anh">EN</button>
-                        <button onclick="speakBilingual('${item.wordEn}', '${item.wordVi}')" class="w-8 h-8 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-600 flex items-center justify-center font-black text-xs shadow-sm transition-all active:scale-90" title="Đọc song ngữ"><i class="fa-solid fa-repeat"></i></button>
-                        <button onclick="openWritingPad('${item.wordEn}')" class="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-600 flex items-center justify-center font-black text-xs shadow-sm transition-all active:scale-90" title="Tập viết từ này"><i class="fa-solid fa-pencil"></i></button>
+                    <div class="flex items-center space-x-1.5 w-full xs:w-auto justify-end bg-slate-50 border border-slate-100 p-1.5 rounded-xl self-stretch xs:self-auto shrink-0">
+                        <button onclick="speakText('${item.wordVi}', 'vi')" class="w-9 h-9 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-600 flex items-center justify-center font-black text-xs shadow-sm transition-all active:scale-90 min-h-[36px] min-w-[36px]" title="Phát âm tiếng Việt">VI</button>
+                        <button onclick="speakText('${item.wordEn}', 'en')" class="w-9 h-9 rounded-full bg-rose-100 hover:bg-rose-200 text-rose-600 flex items-center justify-center font-black text-xs shadow-sm transition-all active:scale-90 min-h-[36px] min-w-[36px]" title="Phát âm tiếng Anh">EN</button>
+                        <button onclick="speakBilingual('${item.wordEn}', '${item.wordVi}')" class="w-9 h-9 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-600 flex items-center justify-center font-black text-xs shadow-sm transition-all active:scale-90 min-h-[36px] min-w-[36px]" title="Đọc song ngữ"><i class="fa-solid fa-repeat"></i></button>
+                        <button onclick="openWritingPad('${item.wordEn}')" class="w-9 h-9 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-600 flex items-center justify-center font-black text-xs shadow-sm transition-all active:scale-90 min-h-[36px] min-w-[36px]" title="Tập viết từ này"><i class="fa-solid fa-pencil"></i></button>
                     </div>
                 `;
                 grid.appendChild(block);
             });
         }
 
-        // Helper to read both English and Vietnamese sequentially
+        // Helper to read both English and Vietnamese sequentially with a strict pause in between
         function speakBilingual(enText, viText, callback = null) {
             speakText(enText, 'en', () => {
+                // Strict pause after English finishes before speaking Vietnamese (Requested changes)
                 setTimeout(() => {
                     speakText(viText, 'vi', callback);
-                }, 1000);
+                }, 1200);
             });
         }
 
@@ -994,12 +1260,12 @@
                 const card = document.createElement('div');
                 card.className = "bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex flex-col items-center justify-between space-y-3";
                 card.innerHTML = `
-                    <span class="text-5xl select-none filter drop-shadow">${item.emoji}</span>
+                    ${getEmojiOrColorHtml(item, 'text-4xl')}
                     <div class="text-center">
-                        <p class="kids-font text-lg text-yellow-300 leading-tight">${item.wordEn}</p>
-                        <p class="text-xs font-extrabold text-white opacity-90">${item.wordVi}</p>
+                        <p class="kids-font text-base text-yellow-300 leading-tight">${item.wordEn}</p>
+                        <p class="text-[11px] font-extrabold text-white opacity-90">${item.wordVi}</p>
                     </div>
-                    <div class="flex items-center space-x-1 w-full justify-center">
+                    <div class="flex items-center space-x-1.5 w-full justify-center">
                         <button onclick="speakText('${item.wordVi}', 'vi')" class="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full px-2.5 py-1 text-[10px] font-black shadow-md transition-all">VI</button>
                         <button onclick="speakText('${item.wordEn}', 'en')" class="bg-red-500 hover:bg-red-600 text-white rounded-full px-2.5 py-1 text-[10px] font-black shadow-md transition-all">EN</button>
                         <button onclick="speakBilingual('${item.wordEn}', '${item.wordVi}')" class="bg-purple-500 hover:bg-purple-600 text-white rounded-full px-2.5 py-1 text-[10px] font-black shadow-md transition-all"><i class="fa-solid fa-repeat"></i></button>
@@ -1008,7 +1274,7 @@
                 `;
                 container.appendChild(card);
             });
-            if (forceRefresh) showToast("Đã chọn 3 từ thách thức mới hôm nay!");
+            if (forceRefresh) showToast("Đã chọn 3 từ mới hôm nay!");
         }
 
         // SỔ TAY TỰ THÊM
@@ -1027,19 +1293,19 @@
 
             customWords.forEach((word, index) => {
                 const card = document.createElement('div');
-                card.className = "bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 flex items-center justify-between shadow-sm";
+                card.className = "bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 flex items-center justify-between shadow-sm gap-2";
                 card.innerHTML = `
-                    <div class="flex items-center space-x-2.5">
-                        <span class="text-3xl filter drop-shadow select-none">${word.emoji}</span>
-                        <div>
-                            <p class="kids-font text-sm text-amber-800 font-bold">${word.wordEn}</p>
-                            <p class="text-xs font-black text-slate-500">${word.wordVi}</p>
+                    <div class="flex items-center space-x-2.5 min-w-0">
+                        <span class="text-3xl filter drop-shadow select-none shrink-0">${word.emoji}</span>
+                        <div class="min-w-0 truncate">
+                            <p class="kids-font text-sm text-amber-800 font-bold truncate">${word.wordEn}</p>
+                            <p class="text-[11px] font-black text-slate-500 truncate">${word.wordVi}</p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-1">
-                        <button onclick="speakText('${word.wordVi}', 'vi')" class="w-7 h-7 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-600 flex items-center justify-center text-[10px] font-black">VI</button>
-                        <button onclick="speakText('${word.wordEn}', 'en')" class="w-7 h-7 rounded-full bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-[10px] font-black">EN</button>
-                        <button onclick="deleteCustomWord(${index})" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-red-100 hover:text-red-500 text-slate-400 flex items-center justify-center text-[10px] font-black"><i class="fa-solid fa-trash-can"></i></button>
+                    <div class="flex items-center space-x-1 shrink-0">
+                        <button onclick="speakText('${word.wordVi}', 'vi')" class="w-8 h-8 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-600 flex items-center justify-center text-[10px] font-black min-h-[32px] min-w-[32px]">VI</button>
+                        <button onclick="speakText('${word.wordEn}', 'en')" class="w-8 h-8 rounded-full bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-[10px] font-black min-h-[32px] min-w-[32px]">EN</button>
+                        <button onclick="deleteCustomWord(${index})" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-red-100 hover:text-red-500 text-slate-400 flex items-center justify-center text-[10px] font-black min-h-[32px] min-w-[32px]"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 `;
                 list.appendChild(card);
@@ -1067,6 +1333,7 @@
             showToast("Đã xóa khỏi sổ tay từ vựng!");
         }
 
+        // --- STREAMING_CHUNK: Viết các hàm vận hành trò chơi lật thẻ nhớ & game xếp chữ cái ---
         // --- 3. BRAIN DEVELOPMENT GAMES LOGIC ---
         let activeGameMode = 'memory'; // 'memory', 'spelling', 'association'
         let gameScore = 0;
@@ -1131,9 +1398,9 @@
             modes.forEach(m => {
                 const btn = document.getElementById(`btn-game-${m === 'association' ? 'assoc' : m}`);
                 if (m === mode) {
-                    btn.className = "py-3 rounded-2xl text-xs font-black shadow bg-indigo-600 text-white";
+                    btn.className = "py-3 px-1 rounded-2xl text-[10px] md:text-xs font-black shadow bg-indigo-600 text-white min-h-[44px]";
                 } else {
-                    btn.className = "py-3 rounded-2xl text-xs font-black shadow bg-white text-slate-700 hover:bg-slate-50";
+                    btn.className = "py-3 px-1 rounded-2xl text-[10px] md:text-xs font-black shadow bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 min-h-[44px]";
                 }
 
                 const area = document.getElementById(`game-${m}-area`);
@@ -1173,18 +1440,18 @@
 
             memoryCards.forEach(cardData => {
                 const card = document.createElement('div');
-                card.className = "w-full aspect-square bg-indigo-100 hover:bg-indigo-200 border-2 border-indigo-300 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-200 select-none shadow-sm";
+                card.className = "w-full aspect-square bg-indigo-100 hover:bg-indigo-200 border-2 border-indigo-300 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-200 select-none shadow-sm min-h-[44px]";
                 card.dataset.uniqueId = cardData.uniqueId;
-                card.innerHTML = `<span class="kids-font text-3xl font-black text-indigo-500">?</span>`;
+                card.innerHTML = `<span class="kids-font text-2xl sm:text-3xl font-black text-indigo-500">?</span>`;
                 
                 card.onclick = () => {
                     if (lockMemoryBoard || card.classList.contains('matched') || card === firstCard || gameTransitionLock) return;
 
                     card.className = "w-full aspect-square bg-white border-2 border-emerald-500 rounded-2xl flex flex-col items-center justify-center cursor-default shadow-md scale-105";
                     if (cardData.type === 'emoji') {
-                        card.innerHTML = `<span class="text-4xl">${cardData.emoji}</span>`;
+                        card.innerHTML = getEmojiOrColorHtml(cardData, 'text-3xl');
                     } else {
-                        card.innerHTML = `<p class="kids-font text-[10px] sm:text-xs font-black text-indigo-600 text-center uppercase tracking-wider">${gameLanguage === 'VI' ? cardData.wordVi : cardData.wordEn}</p>`;
+                        card.innerHTML = `<p class="kids-font text-[9px] sm:text-[10px] md:text-xs font-black text-indigo-600 text-center uppercase tracking-wider px-1 break-words w-full">${gameLanguage === 'VI' ? cardData.wordVi : cardData.wordEn}</p>`;
                     }
 
                     if (!firstCard) {
@@ -1244,10 +1511,10 @@
             } else {
                 setTimeout(() => {
                     firstCard.className = "w-full aspect-square bg-indigo-100 hover:bg-indigo-200 border-2 border-indigo-300 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-200 select-none shadow-sm";
-                    firstCard.innerHTML = `<span class="kids-font text-3xl font-black text-indigo-500">?</span>`;
+                    firstCard.innerHTML = `<span class="kids-font text-2xl sm:text-3xl font-black text-indigo-500">?</span>`;
                     
                     secondCard.className = "w-full aspect-square bg-indigo-100 hover:bg-indigo-200 border-2 border-indigo-300 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-200 select-none shadow-sm";
-                    secondCard.innerHTML = `<span class="kids-font text-3xl font-black text-indigo-500">?</span>`;
+                    secondCard.innerHTML = `<span class="kids-font text-2xl sm:text-3xl font-black text-indigo-500">?</span>`;
 
                     firstCard = null;
                     secondCard = null;
@@ -1279,10 +1546,10 @@
             const len = targetWord.length;
             for (let i = 0; i < len; i++) {
                 const slot = document.createElement('div');
-                slot.className = "w-10 h-10 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center bg-slate-50";
+                slot.className = "w-9 h-9 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center bg-slate-50";
                 
                 if (spellUserAnswer[i]) {
-                    slot.className = "w-10 h-10 border-2 border-indigo-500 rounded-xl flex items-center justify-center bg-indigo-100 font-black text-lg text-indigo-700 kids-font shadow-sm scale-105 transition-all";
+                    slot.className = "w-9 h-9 border-2 border-indigo-500 rounded-xl flex items-center justify-center bg-indigo-100 font-black text-base text-indigo-700 kids-font shadow-sm scale-105 transition-all";
                     slot.innerText = spellUserAnswer[i];
                 }
                 slots.appendChild(slot);
@@ -1293,7 +1560,7 @@
 
             spellOptionsLetters.forEach((letter, index) => {
                 const btn = document.createElement('button');
-                btn.className = "btn-bounce w-11 h-11 bg-white border-2 border-slate-300 border-r-4 border-b-4 hover:border-emerald-400 text-slate-700 font-black text-lg rounded-xl flex items-center justify-center transition-all shadow";
+                btn.className = "btn-bounce w-11 h-11 bg-white border-2 border-slate-300 border-r-4 border-b-4 hover:border-emerald-400 text-slate-700 font-black text-base rounded-xl flex items-center justify-center transition-all shadow min-h-[44px]";
                 btn.innerText = letter;
                 btn.onclick = () => {
                     if (spellUserAnswer.length < len && !gameTransitionLock) {
@@ -1327,7 +1594,7 @@
                 
                 if (gameLanguage === 'VI') {
                     showGameFeedback(true, `🌟 Xuất sắc! Từ đúng: ${spellCurrentItem.wordVi}`);
-                    speakText(`Chính xác! ${spellCurrentItem.wordVi}`, 'vi', () => {
+                    speakText(`Chính xác! Từ này là ${spellCurrentItem.wordVi}`, 'vi', () => {
                         setTimeout(() => {
                             gameTransitionLock = false;
                             initSpellingGame();
@@ -1378,7 +1645,7 @@
 
             assocOptions.forEach(opt => {
                 const btn = document.createElement('button');
-                btn.className = "btn-bounce bg-white border-4 border-slate-200 hover:border-indigo-400 rounded-3xl p-6 flex flex-col items-center justify-center space-y-2 transition-all shadow-md";
+                btn.className = "btn-bounce bg-white border-4 border-slate-200 hover:border-indigo-400 rounded-3xl p-5 flex flex-col items-center justify-center space-y-2 transition-all shadow-md min-h-[44px]";
                 btn.onclick = () => {
                     if (gameTransitionLock) return;
 
@@ -1388,7 +1655,7 @@
                         document.getElementById('brain-score').innerText = gameScore;
                         confetti({ particleCount: 50, spread: 60 });
                         
-                        btn.className = "btn-bounce bg-emerald-100 border-4 border-emerald-500 rounded-3xl p-6 flex flex-col items-center justify-center space-y-2 transition-all shadow-md";
+                        btn.className = "btn-bounce bg-emerald-100 border-4 border-emerald-500 rounded-3xl p-5 flex flex-col items-center justify-center space-y-2 transition-all shadow-md min-h-[44px]";
 
                         if (gameLanguage === 'VI') {
                             showGameFeedback(true, `🌟 Xuất sắc! Đây chính là: ${opt.wordVi}`);
@@ -1414,24 +1681,24 @@
                             });
                         }
                     } else {
-                        btn.className = "btn-bounce bg-rose-50 border-4 border-rose-300 rounded-3xl p-6 flex flex-col items-center justify-center space-y-2 opacity-50 cursor-not-allowed";
+                        btn.className = "btn-bounce bg-rose-50 border-4 border-rose-300 rounded-3xl p-5 flex flex-col items-center justify-center space-y-2 opacity-50 cursor-not-allowed min-h-[44px]";
                         btn.disabled = true;
                         if (gameLanguage === 'VI') {
-                            showGameFeedback(false, "😢 Chưa chính xác, chọn lại nào!");
-                            speakText(`Không phải ${opt.wordVi} đâu bé!`, "vi");
+                            showGameFeedback(false, "😢 Chọn lại nào!");
+                            speakText(`Không phải ${opt.wordVi} đâu!`, "vi");
                         } else if (gameLanguage === 'EN') {
-                            showGameFeedback(false, "😢 Wrong choice, try again!");
+                            showGameFeedback(false, "😢 Try again!");
                             speakText(`That is not ${opt.wordEn}!`, "en");
                         } else {
-                            showGameFeedback(false, "😢 Thử hình khác nào!");
-                            speakText("Ồ, hình này chưa đúng!", "vi");
+                            showGameFeedback(false, "😢 Thử lại nào!");
+                            speakText("Chưa đúng rồi!", "vi");
                         }
                     }
                 };
 
                 btn.innerHTML = `
-                    <span class="text-5xl filter drop-shadow select-none">${opt.emoji}</span>
-                    <span class="font-black text-slate-700 text-sm">${gameLanguage === 'VI' ? opt.wordVi : opt.wordEn}</span>
+                    ${getEmojiOrColorHtml(opt, 'text-4xl')}
+                    <span class="font-black text-slate-700 text-xs text-center break-words w-full px-1">${gameLanguage === 'VI' ? opt.wordVi : opt.wordEn}</span>
                 `;
                 grid.appendChild(btn);
             });
@@ -1457,10 +1724,10 @@
             const m = document.getElementById('game-feedback-message');
             f.classList.remove('hidden');
             m.innerText = message;
-            m.className = success ? "text-xl font-black text-emerald-600 animate-bounce" : "text-base font-bold text-red-500 animate-pulse";
+            m.className = success ? "text-base md:text-xl font-black text-emerald-600 animate-bounce leading-tight" : "text-sm font-bold text-red-500 animate-pulse";
         }
 
-
+        // --- STREAMING_CHUNK: Viết các hàm vận hành phòng âm nhạc, điều phối âm lượng karaoke ---
         // --- 4. EDUCATIONAL MUSIC ROOM SYSTEM ---
         let currentMusicLanguage = 'VI';
         let isMelodyPlaying = false;
@@ -1479,15 +1746,15 @@
             const btnKaraoke = document.getElementById('music-mode-karaoke');
 
             if (mode === 'normal') {
-                btnNormal.className = "px-3 py-1 rounded-md text-xs font-black bg-pink-500 text-white transition-all shadow-sm";
-                btnKaraoke.className = "px-3 py-1 rounded-md text-xs font-black text-slate-300 hover:text-white transition-all";
+                btnNormal.className = "flex-1 xs:flex-none px-3 py-1.5 rounded-md text-[10px] md:text-xs font-black bg-pink-500 text-white transition-all shadow-sm";
+                btnKaraoke.className = "flex-1 xs:flex-none px-3 py-1.5 rounded-md text-[10px] md:text-xs font-black text-slate-300 hover:text-white transition-all";
                 showToast("Chế độ: Giai điệu nhạc đầy đủ");
                 if (customAudioElement) {
                     customAudioElement.volume = 1.0;
                 }
             } else {
-                btnKaraoke.className = "px-3 py-1 rounded-md text-xs font-black bg-pink-500 text-white transition-all shadow-sm";
-                btnNormal.className = "px-3 py-1 rounded-md text-xs font-black text-slate-300 hover:text-white transition-all";
+                btnKaraoke.className = "flex-1 xs:flex-none px-3 py-1.5 rounded-md text-[10px] md:text-xs font-black bg-pink-500 text-white transition-all shadow-sm";
+                btnNormal.className = "flex-1 xs:flex-none px-3 py-1.5 rounded-md text-[10px] md:text-xs font-black text-slate-300 hover:text-white transition-all";
                 showToast("Chế độ Karaoke: Chỉ giữ đệm nhịp nền");
                 if (customAudioElement) {
                     customAudioElement.volume = 0.4; // lower main track sound for kids voice overlaying
@@ -1515,7 +1782,7 @@
             songs.forEach((song, idx) => {
                 const isSelected = idx === activeSongIndex;
                 const btn = document.createElement('button');
-                btn.className = `w-full text-left p-3 rounded-xl border border-slate-700 hover:border-pink-400 bg-slate-800 flex justify-between items-center transition-all ${
+                btn.className = `w-full text-left p-3 rounded-xl border border-slate-700 hover:border-pink-400 bg-slate-800 flex justify-between items-center transition-all min-h-[44px] ${
                     isSelected ? 'ring-2 ring-pink-500 border-transparent bg-slate-700' : ''
                 }`;
                 btn.onclick = () => {
@@ -1525,11 +1792,11 @@
                     playSelectedSong();
                 };
                 btn.innerHTML = `
-                    <span class="text-xs font-bold text-slate-200 truncate flex items-center gap-1.5">
+                    <span class="text-xs font-bold text-slate-200 truncate flex items-center gap-1.5 max-w-[70%]">
                         <i class="fa-solid fa-cloud text-pink-400"></i> 
                         ${song.title}
                     </span>
-                    <span class="text-[10px] bg-slate-700 text-pink-300 font-extrabold px-1.5 py-0.5 rounded-md">Bấm phát</span>
+                    <span class="text-[10px] bg-slate-700 text-pink-300 font-extrabold px-2 py-1 rounded-md shrink-0">Bấm phát</span>
                 `;
                 list.appendChild(btn);
             });
@@ -1553,7 +1820,7 @@
 
             loadSongToWidget(song);
             isMelodyPlaying = true;
-            document.getElementById('music-vinyl').className = "w-14 h-14 bg-gradient-to-tr from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-3xl animate-spin shadow-lg";
+            document.getElementById('music-vinyl').className = "w-12 h-12 bg-gradient-to-tr from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-2xl animate-spin shadow-lg shrink-0";
             
             customAudioElement = new Audio(song.audioUrl);
             customAudioElement.volume = (musicAccompanimentMode === 'karaoke') ? 0.4 : 1.0;
@@ -1569,7 +1836,7 @@
             if (customAudioElement && isMelodyPlaying) {
                 customAudioElement.pause();
                 isMelodyPlaying = false;
-                document.getElementById('music-vinyl').className = "w-14 h-14 bg-gradient-to-tr from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-3xl shadow-lg";
+                document.getElementById('music-vinyl').className = "w-12 h-12 bg-gradient-to-tr from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-2xl shadow-lg shrink-0";
                 document.getElementById('play-status-indicator').innerText = "Đã tạm dừng phát nhạc";
                 showToast("Đã tạm dừng bài hát");
             }
@@ -1580,7 +1847,7 @@
             if (customAudioElement && !isMelodyPlaying) {
                 customAudioElement.play();
                 isMelodyPlaying = true;
-                document.getElementById('music-vinyl').className = "w-14 h-14 bg-gradient-to-tr from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-3xl animate-spin shadow-lg";
+                document.getElementById('music-vinyl').className = "w-12 h-12 bg-gradient-to-tr from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-2xl animate-spin shadow-lg shrink-0";
                 document.getElementById('play-status-indicator').innerText = "Tiếp tục phát nhạc...";
                 showToast("Tiếp tục phát bài hát");
             } else if (!customAudioElement && activeSongIndex !== -1) {
@@ -1591,14 +1858,14 @@
         // Direct Turn-off Stop functionality (Requested feature)
         function stopActiveMusic() {
             isMelodyPlaying = false;
-            document.getElementById('music-vinyl').className = "w-14 h-14 bg-gradient-to-tr from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-3xl shadow-lg";
+            document.getElementById('music-vinyl').className = "w-12 h-12 bg-gradient-to-tr from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-2xl shadow-lg shrink-0";
             
             if (customAudioElement) {
                 customAudioElement.pause();
                 customAudioElement.currentTime = 0;
                 customAudioElement = null;
             }
-            document.getElementById('play-status-indicator').innerText = "Đã dừng tắt trình phát";
+            document.getElementById('play-status-indicator').innerText = "Đã dừng trình phát";
             document.getElementById('current-song-title').innerText = "Hãy chọn hoặc tải lên bài hát!";
         }
 
@@ -1614,14 +1881,14 @@
             };
 
             customSongsList.push(customSong);
-            showToast(`Đã thêm bài hát "${customSong.title}" vào danh sách của bé!`);
+            showToast(`Đã thêm bài hát "${customSong.title}" vào danh sách!`);
             
             activeSongIndex = customSongsList.length - 1;
             renderNurseryPlaylist();
             playSelectedSong(); // Instantly switch and start playing!
         }
 
-
+        // --- STREAMING_CHUNK: Thiết lập các thuật toán vẽ ngón tay lên Canvas, định dạng tỷ lệ tự động ---
         // --- 5. INTERACTIVE CANVAS WRITING PAD ---
         let canvas = null;
         let ctx = null;
@@ -1667,10 +1934,10 @@
             // Single character/number -> square box. Words -> Landscape box.
             if (len <= 2) {
                 container.style.aspectRatio = '1 / 1';
-                container.style.maxWidth = '360px';
+                container.style.maxWidth = '300px';
                 container.style.margin = '0 auto';
             } else {
-                container.style.aspectRatio = '2.5 / 1';
+                container.style.aspectRatio = '2.4 / 1';
                 container.style.maxWidth = '100%';
                 container.style.margin = '0';
             }
@@ -1695,25 +1962,32 @@
             canvas.addEventListener('mouseup', stopWriting);
             canvas.addEventListener('mouseleave', stopWriting);
 
+            // Touch events specifically preventing scrolling on mobile (Essential optimization)
             canvas.addEventListener('touchstart', (e) => {
+                if (e.target === canvas) {
+                    e.preventDefault(); // Prevent swipe-to-refresh & screen drag
+                }
                 const touch = e.touches[0];
                 const mouseEvent = new MouseEvent("mousedown", {
                     clientX: touch.clientX,
                     clientY: touch.clientY
                 });
                 canvas.dispatchEvent(mouseEvent);
-            }, { passive: true });
+            }, { passive: false });
 
             canvas.addEventListener('touchmove', (e) => {
+                if (e.target === canvas) {
+                    e.preventDefault(); // Stop standard screen scroll while drawing
+                }
                 const touch = e.touches[0];
                 const mouseEvent = new MouseEvent("mousemove", {
                     clientX: touch.clientX,
                     clientY: touch.clientY
                 });
                 canvas.dispatchEvent(mouseEvent);
-            }, { passive: true });
+            }, { passive: false });
 
-            canvas.addEventListener('touchend', () => {
+            canvas.addEventListener('touchend', (e) => {
                 const mouseEvent = new MouseEvent("mouseup", {});
                 canvas.dispatchEvent(mouseEvent);
             }, { passive: true });
@@ -1798,6 +2072,141 @@
             }
         }
 
+        // --- STREAMING_CHUNK: Vận hành cơ chế Học Thẻ Flashcards, đọc tiếng Anh trước -> dừng -> đọc tiếng Việt -> chờ lật thẻ ---
+        // ================= FLASHCARD SYSTEM INTEGRATION LOGIC =================
+        function startFlashcardSystem() {
+            flashcardsQueue = shuffleArray(VOCABULARY_DATA);
+            flashcardIndex = 0;
+            renderFlashcard();
+        }
+
+        function renderFlashcard() {
+            const container = document.getElementById('flashcard-body-container');
+            if (!container || flashcardsQueue.length === 0) return;
+
+            const item = flashcardsQueue[flashcardIndex];
+
+            // Render highly readable, large responsive flashcard layout with super-sized emoji (Requested changes)
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center bg-slate-50 border border-slate-100 rounded-3xl p-6 shadow-inner w-full min-h-[260px] gap-6">
+                    ${getEmojiOrColorHtml(item, 'text-8xl md:text-9xl')}
+                    <div class="text-center w-full truncate px-2">
+                        <p class="kids-font text-3xl md:text-4xl text-indigo-700 font-black tracking-wide truncate leading-tight">${item.wordEn}</p>
+                        <p class="text-lg md:text-xl font-black text-emerald-600 tracking-wide truncate mt-2 leading-tight">${item.wordVi}</p>
+                    </div>
+                </div>
+            `;
+            
+            // Auto-speak current card on transition
+            speakActiveFlashcard();
+        }
+
+        function speakActiveFlashcard(callback = null) {
+            const item = flashcardsQueue[flashcardIndex];
+            if (!item) return;
+
+            if (flashcardMode === 'VI') {
+                speakText(item.wordVi, 'vi', callback);
+            } else if (flashcardMode === 'EN') {
+                speakText(item.wordEn, 'en', callback);
+            } else {
+                // Song ngữ - speaks English first, waits until fully finished, then speaks Vietnamese (Requested changes)
+                speakBilingual(item.wordEn, item.wordVi, callback);
+            }
+        }
+
+        function nextFlashcard() {
+            if (flashcardsQueue.length === 0) return;
+            flashcardIndex = (flashcardIndex + 1) % flashcardsQueue.length;
+            renderFlashcard();
+            triggerFlashcardAutoTimer();
+        }
+
+        function prevFlashcard() {
+            if (flashcardsQueue.length === 0) return;
+            flashcardIndex = (flashcardIndex - 1 + flashcardsQueue.length) % flashcardsQueue.length;
+            renderFlashcard();
+            triggerFlashcardAutoTimer();
+        }
+
+        function changeFlashcardMode(mode) {
+            flashcardMode = mode;
+            const viBtn = document.getElementById('fc-mode-vi');
+            const enBtn = document.getElementById('fc-mode-en');
+            const biBtn = document.getElementById('fc-mode-bi');
+
+            viBtn.className = "px-3.5 py-1.5 rounded-full text-[10px] font-black transition-all text-slate-600 hover:text-indigo-600";
+            enBtn.className = "px-3.5 py-1.5 rounded-full text-[10px] font-black transition-all text-slate-600 hover:text-indigo-600";
+            biBtn.className = "px-3.5 py-1.5 rounded-full text-[10px] font-black transition-all text-slate-600 hover:text-indigo-600";
+
+            if (mode === 'VI') {
+                viBtn.className = "px-3.5 py-1.5 rounded-full text-[10px] font-black transition-all bg-indigo-500 text-white shadow-sm";
+            } else if (mode === 'EN') {
+                enBtn.className = "px-3.5 py-1.5 rounded-full text-[10px] font-black transition-all bg-indigo-500 text-white shadow-sm";
+            } else {
+                biBtn.className = "px-3.5 py-1.5 rounded-full text-[10px] font-black transition-all bg-indigo-500 text-white shadow-sm";
+            }
+
+            renderFlashcard();
+        }
+
+        function handleFlashcardSpeedChange(val) {
+            flashcardDelay = parseInt(val, 10);
+            document.getElementById('fc-speed-label').innerText = `${flashcardDelay} giây`;
+            triggerFlashcardAutoTimer();
+        }
+
+        function toggleFlashcardAuto() {
+            if (isFlashcardAutoActive) {
+                stopFlashcardAuto();
+            } else {
+                startFlashcardAuto();
+            }
+        }
+
+        function startFlashcardAuto() {
+            isFlashcardAutoActive = true;
+            document.getElementById('fc-auto-badge').classList.remove('hidden');
+            document.getElementById('fc-paused-badge').classList.add('hidden');
+            
+            const btn = document.getElementById('btn-fc-toggle');
+            btn.innerHTML = `<i class="fa-solid fa-pause"></i> Dừng tự động lật`;
+            btn.className = "flex-1 bg-red-500 hover:bg-red-600 text-white font-black py-3 px-4 rounded-2xl text-xs flex items-center justify-center gap-1.5 shadow-md uppercase tracking-wider transition-all min-h-[44px]";
+            
+            triggerFlashcardAutoTimer();
+        }
+
+        function stopFlashcardAuto() {
+            isFlashcardAutoActive = false;
+            document.getElementById('fc-auto-badge').classList.add('hidden');
+            document.getElementById('fc-paused-badge').classList.remove('hidden');
+            
+            const btn = document.getElementById('btn-fc-toggle');
+            if (btn) {
+                btn.innerHTML = `<i class="fa-solid fa-play"></i> Tự động lật thẻ`;
+                btn.className = "flex-1 bg-indigo-500 hover:bg-indigo-600 text-white font-black py-3 px-4 rounded-2xl text-xs flex items-center justify-center gap-1.5 shadow-md uppercase tracking-wider transition-all min-h-[44px]";
+            }
+            if (flashcardTimer) {
+                clearTimeout(flashcardTimer);
+                flashcardTimer = null;
+            }
+        }
+
+        function triggerFlashcardAutoTimer() {
+            if (flashcardTimer) {
+                clearTimeout(flashcardTimer);
+                flashcardTimer = null;
+            }
+            if (!isFlashcardAutoActive) return;
+
+            // Wait for complete bilingual voice sequence to finish completely (Requested changes)
+            speakActiveFlashcard(() => {
+                // Start transition countdown ONLY after vocal playback ended completely!
+                flashcardTimer = setTimeout(() => {
+                    nextFlashcard();
+                }, flashcardDelay * 1000);
+            });
+        }
 
         // --- HELPERS ---
         function shuffleArray(array) {
@@ -1808,7 +2217,6 @@
             }
             return arr;
         }
-
 
         // --- INITIAL STARTUP ---
         window.onload = function() {
